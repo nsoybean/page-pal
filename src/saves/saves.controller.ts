@@ -1,5 +1,4 @@
-import { Controller, Get, Req, HttpCode } from '@nestjs/common';
-import { Request } from 'express';
+import { Controller, Get, Res, HttpStatus, Post } from '@nestjs/common';
 import { SavesService } from './saves.service';
 import { Save } from './schemas/save.schema';
 
@@ -9,8 +8,11 @@ export class SavesController {
 
   @Get()
   // @HttpCode(200) // uncomment to overwrite
-  async findAll(): Promise<Save[]> {
+  async findAll(@Res() response): Promise<Save[]> {
     const data = await this.saveService.findAll();
-    return data;
+    return response.status(HttpStatus.OK).json(data);
   }
+
+  // @Post()
+  // async createSave(@Re)
 }

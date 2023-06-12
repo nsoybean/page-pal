@@ -16,6 +16,9 @@ export class Save {
   img: string;
 
   @Prop()
+  link: string;
+
+  @Prop()
   readMinute: number;
 }
 
