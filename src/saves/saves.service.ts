@@ -1,11 +1,14 @@
+import { Model } from 'mongoose';
 import { Injectable } from '@nestjs/common';
-import { Save } from './interfaces/save.interface';
+import { InjectModel } from '@nestjs/mongoose';
+import { Save, SaveDocument } from './schemas/save.schema';
 
 @Injectable()
 export class SavesService {
-  private readonly saves: Save[] = [];
-  get(): Save[] {
-    // return this.saves;
-    return [{ title: 'mock_title', img: 'http://blabla', timeMin: 5 }];
+  constructor(@InjectModel(Save.name) private saveModel: Model<SaveDocument>) {}
+
+  async findAll(): Promise<Save[]> {
+    const allSaves = await this.saveModel.find().exec();
+    return allSaves;
   }
 }
