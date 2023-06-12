@@ -16,7 +16,7 @@ export class Save {
   img: string;
 
   @Prop()
-  timeMin: number;
+  readMinute: number;
 }
 
 export const SaveSchema = SchemaFactory.createForClass(Save);
