@@ -20,7 +20,7 @@ export class SavesController {
     @Body() createSaveDto: CreateSaveRequestDto,
   ) {
     // TODO @shawbin: consider converting dto into entity before passing to service layer
-    const data = await this.saveService.saveLink(createSaveDto);
+    const data = await this.saveService.create(createSaveDto);
     return response
       .status(HttpStatus.CREATED)
       .json({ message: 'mock created!', data: data });

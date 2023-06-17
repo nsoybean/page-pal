@@ -10,6 +10,9 @@ export type SaveDocument = HydratedDocument<Save>;
 @Schema()
 export class Save {
   @Prop()
+  uuid: string;
+
+  @Prop()
   title: string;
 
   @Prop()
