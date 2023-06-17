@@ -26,6 +26,7 @@ export class SavesController {
     );
 
     if (error) {
+      // switch case to manage API error response
       return response.status(HttpStatus.BAD_REQUEST).json('error');
     }
 
