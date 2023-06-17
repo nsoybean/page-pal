@@ -6,7 +6,7 @@ import { CreateSaveRequestDto, CreateSaveResponseDto } from './dto/save.dto';
 import got from 'got';
 import { JSDOM } from 'jsdom';
 import { Common, AppError } from 'src/library';
-import { Save as SaveInterface } from './interfaces/save.interface';
+import { Save as ISaveInterface } from './interfaces/save.interface';
 import { v4 as uuidv4 } from 'uuid';
 import { parseDomain, ParseResultType } from 'parse-domain';
 
@@ -21,7 +21,7 @@ export class SavesService {
 
   async create(
     createSaveDto: CreateSaveRequestDto,
-  ): Promise<SaveInterface | Error> {
+  ): Promise<ISaveInterface | Error> {
     const { data: title, error: getTitleErr } = await Common.pWrap(
       this.getTitleFromLink(createSaveDto.link),
     );
@@ -31,7 +31,7 @@ export class SavesService {
     }
 
     // construct entity
-    const saveEntity: SaveInterface = {
+    const saveEntity: ISaveInterface = {
       uuid: uuidv4(),
       title: title,
       link: createSaveDto.link,

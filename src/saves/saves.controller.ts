@@ -5,13 +5,15 @@ import { CreateSaveRequestDto } from './dto/save.dto';
 import { Save } from './schemas/save.schema';
 import { Common } from 'src/library';
 import { AppError } from 'src/library';
+import { instanceToPlain, plainToClass } from 'class-transformer';
+import { Save as ISaveInterface } from './interfaces/save.interface';
+
 @Controller('saves')
 export class SavesController {
   constructor(private readonly saveService: SavesService) {}
 
   @Get()
-  // @HttpCode(200) // uncomment to overwrite
-  async findAll(@Res() response): Promise<Save[]> {
+  async findAll(@Res() response) {
     const data = await this.saveService.findAll();
     return response.status(HttpStatus.OK).json(data);
   }
@@ -21,7 +23,6 @@ export class SavesController {
     @Res() response,
     @Body(new ValidationPipe()) createSaveDto: CreateSaveRequestDto,
   ) {
-    // TODO @shawbin: consider converting dto into entity before passing to service layer
     const { data, error } = await Common.pWrap(
       this.saveService.create(createSaveDto),
     );
