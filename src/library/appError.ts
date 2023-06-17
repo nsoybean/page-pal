@@ -1,4 +1,5 @@
 import { HttpStatus, Res } from '@nestjs/common';
+
 export class AppError {
   public static readonly objectNotFoundErr: Error = new Error(
     'Object not found',

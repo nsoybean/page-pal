@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Date, HydratedDocument } from 'mongoose';
 import { now } from 'mongoose';
-import { ExcludeProperty } from 'nestjs-mongoose-exclude';
+
 export type SaveDocument = HydratedDocument<Save>;
 
 /**
