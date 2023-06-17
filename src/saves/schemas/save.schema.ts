@@ -10,13 +10,19 @@ export type SaveDocument = HydratedDocument<Save>;
 @Schema()
 export class Save {
   @Prop()
+  uuid: string;
+
+  @Prop()
   title: string;
 
   @Prop()
   img: string;
 
   @Prop()
-  timeMin: number;
+  link: string;
+
+  @Prop()
+  readMinute: number;
 }
 
 export const SaveSchema = SchemaFactory.createForClass(Save);

@@ -1,7 +1,8 @@
-import { Controller, Get, Req, HttpCode } from '@nestjs/common';
-import { Request } from 'express';
+import { Controller, Get, Res, HttpStatus, Post, Body } from '@nestjs/common';
 import { SavesService } from './saves.service';
+import { CreateSaveRequestDto } from './dto/save.dto';
 import { Save } from './schemas/save.schema';
+import { Common } from 'src/library';
 
 @Controller('saves')
 export class SavesController {
@@ -9,8 +10,25 @@ export class SavesController {
 
   @Get()
   // @HttpCode(200) // uncomment to overwrite
-  async findAll(): Promise<Save[]> {
+  async findAll(@Res() response): Promise<Save[]> {
     const data = await this.saveService.findAll();
-    return data;
+    return response.status(HttpStatus.OK).json(data);
+  }
+
+  @Post()
+  async createSave(
+    @Res() response,
+    @Body() createSaveDto: CreateSaveRequestDto,
+  ) {
+    // TODO @shawbin: consider converting dto into entity before passing to service layer
+    const { data, error } = await Common.pWrap(
+      this.saveService.create(createSaveDto),
+    );
+
+    if (error) {
+      return response.status(HttpStatus.BAD_REQUEST).json('error');
+    }
+
+    return response.status(HttpStatus.CREATED).json(data);
   }
 }

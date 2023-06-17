@@ -1,5 +1,7 @@
 export interface Save {
+  uuid: string;
   title: string;
-  img: string;
-  timeMin: number;
+  img?: string;
+  link: string;
+  readMinute?: number;
 }
