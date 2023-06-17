@@ -1,6 +1,6 @@
 import { Controller, Get, Res, HttpStatus, Post, Body } from '@nestjs/common';
 import { SavesService } from './saves.service';
-import { CreateSaveDto } from './dto/save.dto';
+import { CreateSaveRequestDto } from './dto/save.dto';
 import { Save } from './schemas/save.schema';
 
 @Controller('saves')
@@ -15,13 +15,14 @@ export class SavesController {
   }
 
   @Post()
-  async createSave(@Res() response, @Body() createSaveDto: CreateSaveDto) {
-    console.log(
-      '🚀 ~ file: saves.controller.ts:19 ~ SavesController ~ createSave ~ createSaveDto:',
-      createSaveDto,
-    );
+  async createSave(
+    @Res() response,
+    @Body() createSaveDto: CreateSaveRequestDto,
+  ) {
+    // TODO @shawbin: consider converting dto into entity before passing to service layer
+    const data = await this.saveService.saveLink(createSaveDto);
     return response
       .status(HttpStatus.CREATED)
-      .json({ message: 'mock created!' });
+      .json({ message: 'mock created!', data: data });
   }
 }
