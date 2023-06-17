@@ -1,4 +1,5 @@
 import { HttpStatus, Res } from '@nestjs/common';
+
 export class AppError {
   public static readonly objectNotFoundErr: Error = new Error(
     'Object not found',
@@ -21,19 +22,12 @@ export class AppError {
   }
 
   public static writeErrorResponse(response: any, error: Error) {
-    // const errorResponse = {
-    //   success: true,
-    //   failure: {
-    //     errorId: errorId,
-    //     errorCode: errorCode,
-    //     message: errorMsg,
-    //   },
-    // };
-
-    // return errorResponse;
-
-    return response
-      .status(AppError.mapErrorStatus(error))
-      .json({ message: error.message });
+    // return default internal server error unless error is accounted for
+    return response.status(AppError.mapErrorStatus(error)).json({
+      message:
+        AppError.mapErrorStatus(error) === HttpStatus.INTERNAL_SERVER_ERROR
+          ? 'INTERNAL_SERVER_ERROR'
+          : error.message,
+    });
   }
 }
