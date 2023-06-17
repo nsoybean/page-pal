@@ -1,9 +1,10 @@
+import { ValidationPipe } from './validation.pipe';
 import { Controller, Get, Res, HttpStatus, Post, Body } from '@nestjs/common';
 import { SavesService } from './saves.service';
 import { CreateSaveRequestDto } from './dto/save.dto';
 import { Save } from './schemas/save.schema';
 import { Common } from 'src/library';
-
+import { AppError } from 'src/library';
 @Controller('saves')
 export class SavesController {
   constructor(private readonly saveService: SavesService) {}
@@ -18,7 +19,7 @@ export class SavesController {
   @Post()
   async createSave(
     @Res() response,
-    @Body() createSaveDto: CreateSaveRequestDto,
+    @Body(new ValidationPipe()) createSaveDto: CreateSaveRequestDto,
   ) {
     // TODO @shawbin: consider converting dto into entity before passing to service layer
     const { data, error } = await Common.pWrap(
@@ -26,8 +27,7 @@ export class SavesController {
     );
 
     if (error) {
-      // switch case to manage API error response
-      return response.status(HttpStatus.BAD_REQUEST).json('error');
+      return AppError.writeErrorResponse(response, error);
     }
 
     return response.status(HttpStatus.CREATED).json(data);

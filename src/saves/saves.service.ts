@@ -8,6 +8,7 @@ import { JSDOM } from 'jsdom';
 import { Common, AppError } from 'src/library';
 import { Save as SaveInterface } from './interfaces/save.interface';
 import { v4 as uuidv4 } from 'uuid';
+import { parseDomain, ParseResultType } from 'parse-domain';
 
 @Injectable()
 export class SavesService {
@@ -26,7 +27,7 @@ export class SavesService {
     );
 
     if (getTitleErr) {
-      return getTitleErr;
+      throw getTitleErr;
     }
 
     // construct entity
@@ -45,7 +46,7 @@ export class SavesService {
       console.log(
         `[SavesSvc][create] Failed to persist doc: ${persistErr.message}`,
       );
-      return AppError.internalServerErr;
+      throw AppError.internalServerErr;
     }
 
     return saveEntity;
@@ -56,15 +57,28 @@ export class SavesService {
 
     if (error) {
       console.log(
-        `[SavesSvc][getTitleFromLink] Failed GET request to link: ${error.message}`,
+        `[SavesSvc][getTitleFromLink] Failed GET request to link: ${link}, error: ${error.message}`,
       );
-      return AppError.invalidLinkErr;
+      throw AppError.invalidLinkErr;
     }
 
     const dom = new JSDOM(data.body);
 
-    const title: string =
-      dom.window.document.querySelector('title').textContent;
+    // first attempt: get title from link
+    let title: string = dom.window.document.querySelector('title').textContent;
+
+    // second attempt: get title from url domain
+    if (title === '') {
+      const parseResult = parseDomain(link);
+      // Check if the domain is listed in the public suffix list
+      if (parseResult.type === ParseResultType.Listed) {
+        const { subDomains, domain, topLevelDomains } = parseResult;
+        console.log(
+          `[SavesSvc][getTitleFromLink] Parsed domain for link: ${link}, subDomain: ${subDomains}, domain: ${domain}, topLevelDomain: ${topLevelDomains}`,
+        );
+        title = domain || 'Article';
+      }
+    }
 
     return title;
   }

@@ -8,7 +8,7 @@ export class Common {
     promise: Promise<any>,
   ): Promise<{ data: any; error: any }> {
     return promise
-      .then((data) => ({ data, error: null }))
-      .catch((error) => ({ data: null, error }));
+      .then((pData) => ({ data: pData, error: null }))
+      .catch((pError) => ({ data: null, error: pError }));
   }
 }
