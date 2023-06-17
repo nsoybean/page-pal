@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
-
+import { Date, HydratedDocument } from 'mongoose';
+import { now } from 'mongoose';
+import { ExcludeProperty } from 'nestjs-mongoose-exclude';
 export type SaveDocument = HydratedDocument<Save>;
 
 /**
@@ -9,20 +10,28 @@ export type SaveDocument = HydratedDocument<Save>;
  */
 @Schema()
 export class Save {
-  @Prop()
+  @Prop({
+    unique: true,
+  })
   uuid: string;
 
-  @Prop()
+  @Prop({ required: true })
   title: string;
+
+  @Prop({ required: true })
+  link: string;
 
   @Prop()
   img: string;
 
   @Prop()
-  link: string;
-
-  @Prop()
   readMinute: number;
+
+  @Prop({ type: Date, default: now() })
+  createdAt: Date;
+
+  @Prop({ type: Date, default: now() })
+  updatedAt: Date;
 }
 
 export const SaveSchema = SchemaFactory.createForClass(Save);

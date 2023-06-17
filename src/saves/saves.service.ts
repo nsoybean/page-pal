@@ -1,8 +1,8 @@
 import { Model } from 'mongoose';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Save, SaveDocument } from './schemas/save.schema';
-import { CreateSaveRequestDto, CreateSaveResponseDto } from './dto/save.dto';
+import { Save } from './schemas/save.schema';
+import { CreateSaveRequestDto } from './dto/save.dto';
 import got from 'got';
 import { JSDOM } from 'jsdom';
 import { Common, AppError } from 'src/library';
@@ -12,16 +12,13 @@ import { parseDomain, ParseResultType } from 'parse-domain';
 
 @Injectable()
 export class SavesService {
-  constructor(@InjectModel(Save.name) private saveModel: Model<SaveDocument>) {}
+  constructor(@InjectModel(Save.name) private saveModel: Model<Save>) {}
 
   async findAll(): Promise<Save[]> {
-    const allSaves = await this.saveModel.find().exec();
-    return allSaves;
+    return await this.saveModel.find().exec();
   }
 
-  async create(
-    createSaveDto: CreateSaveRequestDto,
-  ): Promise<ISaveInterface | Error> {
+  async create(createSaveDto: CreateSaveRequestDto): Promise<Save> {
     const { data: title, error: getTitleErr } = await Common.pWrap(
       this.getTitleFromLink(createSaveDto.link),
     );
@@ -31,25 +28,19 @@ export class SavesService {
     }
 
     // construct entity
-    const saveEntity: ISaveInterface = {
-      uuid: uuidv4(),
-      title: title,
-      link: createSaveDto.link,
-    };
+    const newSaveEntity = new this.saveModel(createSaveDto);
+    newSaveEntity.uuid = uuidv4();
+    newSaveEntity.title = title;
 
-    // persist
-    const { error: persistErr } = await Common.pWrap(
-      this.saveModel.create(saveEntity),
+    const { data: saveRes, error: saveErr } = await Common.pWrap(
+      newSaveEntity.save(),
     );
 
-    if (persistErr) {
-      console.log(
-        `[SavesSvc][create] Failed to persist doc: ${persistErr.message}`,
-      );
-      throw AppError.internalServerErr;
+    if (saveErr) {
+      throw saveErr;
     }
 
-    return saveEntity;
+    return saveRes;
   }
 
   async getTitleFromLink(link: string): Promise<string | Error> {

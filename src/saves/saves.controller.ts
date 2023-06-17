@@ -28,6 +28,7 @@ export class SavesController {
     );
 
     if (error) {
+      console.log(`[savesCon][createSave] Error: ${error.message}`);
       return AppError.writeErrorResponse(response, error);
     }
 
