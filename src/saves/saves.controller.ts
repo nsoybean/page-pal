@@ -1,6 +1,6 @@
-import { Controller, Get, Req, HttpCode } from '@nestjs/common';
-import { Request } from 'express';
+import { Controller, Get, Res, HttpStatus, Post, Body } from '@nestjs/common';
 import { SavesService } from './saves.service';
+import { CreateSaveDto } from './dto/save.dto';
 import { Save } from './schemas/save.schema';
 
 @Controller('saves')
@@ -9,8 +9,19 @@ export class SavesController {
 
   @Get()
   // @HttpCode(200) // uncomment to overwrite
-  async findAll(): Promise<Save[]> {
+  async findAll(@Res() response): Promise<Save[]> {
     const data = await this.saveService.findAll();
-    return data;
+    return response.status(HttpStatus.OK).json(data);
+  }
+
+  @Post()
+  async createSave(@Res() response, @Body() createSaveDto: CreateSaveDto) {
+    console.log(
+      '🚀 ~ file: saves.controller.ts:19 ~ SavesController ~ createSave ~ createSaveDto:',
+      createSaveDto,
+    );
+    return response
+      .status(HttpStatus.CREATED)
+      .json({ message: 'mock created!' });
   }
 }
