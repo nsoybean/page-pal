@@ -6,8 +6,7 @@ import {
   CreateSaveResponseDto,
   GetSaveResponseDto,
 } from './dto/save.dto';
-import { Common } from 'src/library';
-import { AppError } from 'src/library';
+import { HttpResponse, Common } from '../library';
 import { plainToInstance } from 'class-transformer';
 
 @Controller('saves')
@@ -32,8 +31,8 @@ export class SavesController {
     );
 
     if (error) {
-      console.log(`[savesCon][createSave] Error: ${error.message}`);
-      return AppError.writeErrorResponse(response, error);
+      console.log(`[SavesCon][createSave] Error: ${error.message}`);
+      return HttpResponse.writeErrorResponse(error);
     }
 
     const createSaveResponse = plainToInstance(CreateSaveResponseDto, data);
