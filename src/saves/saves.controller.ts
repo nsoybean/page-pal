@@ -7,6 +7,7 @@ import {
   Post,
   Body,
   Param,
+  Delete,
 } from '@nestjs/common';
 import { SavesService } from './saves.service';
 import {
@@ -32,6 +33,19 @@ export class SavesController {
   @Get(':id')
   async findOne(@Res() response, @Param('id') id: string) {
     const { data, error } = await Common.pWrap(this.saveService.findOne(id));
+
+    if (error) {
+      console.log(`[SavesCon][findOne] Error: ${error.message}`);
+      return HttpResponse.writeErrorResponse(error);
+    }
+
+    const save = plainToInstance(GetSaveResponseDto, data);
+    return response.status(HttpStatus.OK).json(save);
+  }
+
+  @Delete(':id')
+  async deleteOne(@Res() response, @Param('id') id: string) {
+    const { data, error } = await Common.pWrap(this.saveService.DeleteOne(id));
 
     if (error) {
       console.log(`[SavesCon][findOne] Error: ${error.message}`);
