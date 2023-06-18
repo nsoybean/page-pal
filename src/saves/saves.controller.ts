@@ -24,10 +24,21 @@ export class SavesController {
 
   @Get()
   async findAll(@Res() response) {
-    const data = await this.saveService.findAll();
+    const { data: results, error } = await Common.pWrap(
+      this.saveService.findAll(),
+    );
 
-    const findSaves = plainToInstance(GetSaveResponseDto, data);
-    return response.status(HttpStatus.OK).json(findSaves);
+    if (error) {
+      console.log(`[SavesCon][findAll] Error: ${error.message}`);
+      return HttpResponse.writeErrorResponse(error);
+    }
+
+    const findAllResults = {
+      total_records: results.total_records,
+      data: plainToInstance(GetSaveResponseDto, results.data),
+    };
+
+    return response.status(HttpStatus.OK).json(findAllResults);
   }
 
   @Get(':id')
