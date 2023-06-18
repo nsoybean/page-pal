@@ -17,6 +17,23 @@ export class SavesService {
     return await this.saveModel.find().lean().exec();
   }
 
+  async findOne(id: string): Promise<Save> {
+    const { data, error } = await Common.pWrap(
+      this.saveModel.findOne({ uuid: id }).lean().exec(),
+    );
+
+    if (error) {
+      throw error;
+    }
+
+    // if no object found
+    if (!data) {
+      throw AppError.objectNotFoundErr;
+    }
+
+    return data;
+  }
+
   async create(createSaveDto: CreateSaveRequestDto): Promise<Save> {
     const { data: title, error: getTitleErr } = await Common.pWrap(
       this.getTitleFromLink(createSaveDto.link),

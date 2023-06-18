@@ -1,5 +1,13 @@
 import { ValidationPipe } from './validation.pipe';
-import { Controller, Get, Res, HttpStatus, Post, Body } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Res,
+  HttpStatus,
+  Post,
+  Body,
+  Param,
+} from '@nestjs/common';
 import { SavesService } from './saves.service';
 import {
   CreateSaveRequestDto,
@@ -19,6 +27,19 @@ export class SavesController {
 
     const findSaves = plainToInstance(GetSaveResponseDto, data);
     return response.status(HttpStatus.OK).json(findSaves);
+  }
+
+  @Get(':id')
+  async findOne(@Res() response, @Param('id') id: string) {
+    const { data, error } = await Common.pWrap(this.saveService.findOne(id));
+
+    if (error) {
+      console.log(`[SavesCon][findOne] Error: ${error.message}`);
+      return HttpResponse.writeErrorResponse(error);
+    }
+
+    const save = plainToInstance(GetSaveResponseDto, data);
+    return response.status(HttpStatus.OK).json(save);
   }
 
   @Post()

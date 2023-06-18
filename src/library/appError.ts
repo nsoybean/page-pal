@@ -2,7 +2,7 @@ import { HttpStatus } from '@nestjs/common';
 
 export class AppError {
   // Add more error constants as needed
-  objectNotFoundErr: Error = new Error('Object not found');
+  public static objectNotFoundErr: Error = new Error('Object not found');
   public static invalidLinkErr: Error = new Error('Invalid Link');
   public static internalServerErr: Error = new Error('Internal Server Error');
   public static unauthorizedErr: Error = new Error('Unauthorized');
@@ -12,5 +12,8 @@ export class AppError {
   public static mapHttpErrorStatus: Map<Error, HttpStatus> = new Map<
     Error,
     HttpStatus
-  >([[AppError.invalidLinkErr, HttpStatus.BAD_REQUEST]]);
+  >([
+    [AppError.invalidLinkErr, HttpStatus.BAD_REQUEST],
+    [AppError.objectNotFoundErr, HttpStatus.NOT_FOUND],
+  ]);
 }
