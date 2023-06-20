@@ -13,8 +13,76 @@ import { parseDomain, ParseResultType } from 'parse-domain';
 export class SavesService {
   constructor(@InjectModel(Save.name) private saveModel: Model<Save>) {}
 
-  async findAll(): Promise<Save[]> {
-    return await this.saveModel.find().lean().exec();
+  async findAll(): Promise<{ total_records: number; data: Save[] }> {
+    // find total number of docs in db
+    const { data: docsCount, error: docsCountErr } = await Common.pWrap(
+      this.saveModel.countDocuments(),
+    );
+
+    if (docsCountErr) {
+      console.log(
+        `[SavesSvc][findAll] Failed to countDocuments: ${docsCountErr.message}`,
+      );
+      throw docsCountErr;
+    }
+
+    // get all docs
+    // TODO @shawbin: add into server side pagination
+    const { data: saves, error: findSavesErr } = await Common.pWrap(
+      this.saveModel.find().lean().exec(),
+    );
+
+    if (findSavesErr) {
+      console.log(
+        `[SavesSvc][findAll] Failed to find all: ${findSavesErr.message}`,
+      );
+      throw findSavesErr;
+    }
+
+    const result = {
+      total_records: docsCount,
+      data: saves,
+    };
+
+    return result;
+  }
+
+  async findOne(id: string): Promise<Save> {
+    const { data, error } = await Common.pWrap(
+      this.saveModel.findOne({ uuid: id }).lean().exec(),
+    );
+
+    if (error) {
+      console.log(`[SavesSvc][findOne] Failed to findOne: ${error.message}`);
+      throw error;
+    }
+
+    // if no object found
+    if (!data) {
+      throw AppError.objectNotFoundErr;
+    }
+
+    return data;
+  }
+
+  async DeleteOne(id: string): Promise<Save> {
+    const { data, error } = await Common.pWrap(
+      this.saveModel.findOneAndDelete({ uuid: id }).lean().exec(),
+    );
+
+    if (error) {
+      console.log(
+        `[SavesSvc][DeleteOne] Failed to findOneAndDelete: ${error.message}`,
+      );
+      throw error;
+    }
+
+    // if no object found
+    if (!data) {
+      throw AppError.objectNotFoundErr;
+    }
+
+    return data;
   }
 
   async create(createSaveDto: CreateSaveRequestDto): Promise<Save> {

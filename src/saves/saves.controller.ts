@@ -1,13 +1,21 @@
 import { ValidationPipe } from './validation.pipe';
-import { Controller, Get, Res, HttpStatus, Post, Body } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Res,
+  HttpStatus,
+  Post,
+  Body,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { SavesService } from './saves.service';
 import {
   CreateSaveRequestDto,
   CreateSaveResponseDto,
   GetSaveResponseDto,
 } from './dto/save.dto';
-import { Common } from 'src/library';
-import { AppError } from 'src/library';
+import { HttpResponse, Common } from '../library';
 import { plainToInstance } from 'class-transformer';
 
 @Controller('saves')
@@ -16,10 +24,47 @@ export class SavesController {
 
   @Get()
   async findAll(@Res() response) {
-    const data = await this.saveService.findAll();
+    const { data: results, error } = await Common.pWrap(
+      this.saveService.findAll(),
+    );
 
-    const findSaves = plainToInstance(GetSaveResponseDto, data);
-    return response.status(HttpStatus.OK).json(findSaves);
+    if (error) {
+      console.log(`[SavesCon][findAll] Error: ${error.message}`);
+      return HttpResponse.writeErrorResponse(error);
+    }
+
+    const findAllResults = {
+      total_records: results.total_records,
+      data: plainToInstance(GetSaveResponseDto, results.data),
+    };
+
+    return response.status(HttpStatus.OK).json(findAllResults);
+  }
+
+  @Get(':id')
+  async findOne(@Res() response, @Param('id') id: string) {
+    const { data, error } = await Common.pWrap(this.saveService.findOne(id));
+
+    if (error) {
+      console.log(`[SavesCon][findOne] Error: ${error.message}`);
+      return HttpResponse.writeErrorResponse(error);
+    }
+
+    const save = plainToInstance(GetSaveResponseDto, data);
+    return response.status(HttpStatus.OK).json(save);
+  }
+
+  @Delete(':id')
+  async deleteOne(@Res() response, @Param('id') id: string) {
+    const { data, error } = await Common.pWrap(this.saveService.DeleteOne(id));
+
+    if (error) {
+      console.log(`[SavesCon][findOne] Error: ${error.message}`);
+      return HttpResponse.writeErrorResponse(error);
+    }
+
+    const save = plainToInstance(GetSaveResponseDto, data);
+    return response.status(HttpStatus.OK).json(save);
   }
 
   @Post()
@@ -32,8 +77,8 @@ export class SavesController {
     );
 
     if (error) {
-      console.log(`[savesCon][createSave] Error: ${error.message}`);
-      return AppError.writeErrorResponse(response, error);
+      console.log(`[SavesCon][createSave] Error: ${error.message}`);
+      return HttpResponse.writeErrorResponse(error);
     }
 
     const createSaveResponse = plainToInstance(CreateSaveResponseDto, data);
