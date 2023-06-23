@@ -3,11 +3,13 @@ import {
   Injectable,
   BadRequestException,
   NotFoundException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from './schemas/user.schema';
-import { Common, AppError } from 'src/library';
+import { Common } from 'src/library';
+import { IGoogleLogin, IUserDetails } from './interface';
 @Injectable()
 export class AuthService {
   constructor(
@@ -16,20 +18,11 @@ export class AuthService {
   ) {}
 
   /**
-   *
-   * @param payload any
-   * @returns string
-   */
-  generateJwt(payload) {
-    return this.jwtService.sign(payload);
-  }
-
-  /**
    * Look up user in database, insert if not found, return jwt token
    * @param user user object returned by google auth provider
    * @returns jwt token
    */
-  async googleLogin(user): Promise<string> {
+  async googleLogin(user: IUserDetails): Promise<IGoogleLogin> {
     // return if unauthn
     if (!user) {
       throw new BadRequestException('Unauthenticated');
@@ -40,51 +33,76 @@ export class AuthService {
       this.findUserByEmail(user.email),
     );
     if (findUserErr) {
-      return findUserErr;
+      throw findUserErr;
     }
 
     // if user found, sign user details and return token
-    // if user not found, register user, sign user details and return token
-    let jwtToken = '';
     if (userDetails) {
-      jwtToken = this.generateJwt({
-        sub: userDetails.id,
+      const userPayloadToSign = {
         email: userDetails.email,
-      });
+      };
+
+      const { data: jwtToken, error: generateJwtErr } = await Common.pWrap(
+        this.generateJwt(userPayloadToSign),
+      );
+      if (generateJwtErr) {
+        throw generateJwtErr;
+      }
+
+      return {
+        email: userDetails.email,
+        access_token: jwtToken,
+      };
     } else {
-      jwtToken = this.registerUser(user);
+      // if user not found, register user, sign user details and return token
+      const { data: jwtOfNewUser, error: registerErr } = await Common.pWrap(
+        this.registerUser(user),
+      );
+      if (registerErr) {
+        throw registerErr;
+      }
+
+      return {
+        email: userDetails.email,
+        access_token: jwtOfNewUser,
+      };
     }
-    return jwtToken;
   }
 
   /**
    *
-   * @param user
-   * @returns user details of new user
+   * @param user user details
+   * @returns jwt token of new user
    */
-  async registerUser(user: RegisterUserDto) {
+  async registerUser(user: IUserDetails): Promise<string> {
     try {
-      const newUser = this.userRepository.create(user);
-      newUser.username = generateFromEmail(user.email, 5);
+      const newUser = new this.userModel(user);
 
-      await this.userRepository.save(newUser);
-
-      return this.generateJwt({
-        sub: newUser.id,
-        email: newUser.email,
-      });
+      const { error: saveErr } = await Common.pWrap(newUser.save());
+      if (saveErr) {
+        throw saveErr;
+      }
+      const payload = {
+        sub: newUser.email,
+        firstName: newUser.firstName,
+      };
+      return this.generateJwt(payload);
     } catch {
       throw new InternalServerErrorException();
     }
   }
 
-  async findUserByEmail(email) {
-    const user = await this.userModel.findOne({ email });
-
-    if (!user) {
-      throw new NotFoundException();
-    }
-
+  async findUserByEmail(email: string): Promise<UserDocument> {
+    const user = this.userModel.findOne({ email });
     return user;
+  }
+
+  /**
+   *
+   * @param payload any
+   * @returns jwt token of payload
+   */
+  async generateJwt(payload: any): Promise<string> {
+    return await this.jwtService.signAsync(payload);
   }
 }

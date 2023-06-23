@@ -108,7 +108,7 @@ export class SavesService {
     return newSaveEntity.toObject();
   }
 
-  async getTitleFromLink(link: string): Promise<string | Error> {
+  async getTitleFromLink(link: string): Promise<string> {
     const { data, error } = await Common.pWrap(got(link));
 
     if (error) {

@@ -4,7 +4,7 @@
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, VerifyCallback } from 'passport-google-oauth20';
 import { config } from 'dotenv';
-
+import { IUserDetails } from '../interface';
 import { Injectable } from '@nestjs/common';
 
 config();
@@ -29,13 +29,14 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     const { name, emails, photos } = profile;
 
     // extract user information and add to request object
-    const user = {
+    const user: IUserDetails = {
       email: emails[0].value,
       firstName: name.givenName,
       lastName: name.familyName,
       picture: photos[0].value,
       accessToken,
     };
+
     done(null, user);
   }
 }

@@ -12,6 +12,9 @@ export class User {
   @Prop()
   lastName: string;
 
+  @Prop()
+  picture: string;
+
   @Prop({ select: false })
   password: string;
 }
