@@ -1,7 +1,7 @@
 import { Model } from 'mongoose';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Save } from './schemas/save.schema';
+import { Save, SaveDocument } from './schemas/save.schema';
 import { CreateSaveRequestDto } from './dto/save.dto';
 import got from 'got';
 import { JSDOM } from 'jsdom';
@@ -11,9 +11,9 @@ import { parseDomain, ParseResultType } from 'parse-domain';
 
 @Injectable()
 export class SavesService {
-  constructor(@InjectModel(Save.name) private saveModel: Model<Save>) {}
+  constructor(@InjectModel(Save.name) private saveModel: Model<SaveDocument>) {}
 
-  async findAll(): Promise<{ total_records: number; data: Save[] }> {
+  async findAll(): Promise<{ total_records: number; data: SaveDocument[] }> {
     // find total number of docs in db
     const { data: docsCount, error: docsCountErr } = await Common.pWrap(
       this.saveModel.countDocuments(),
@@ -47,7 +47,7 @@ export class SavesService {
     return result;
   }
 
-  async findOne(id: string): Promise<Save> {
+  async findOne(id: string): Promise<SaveDocument> {
     const { data, error } = await Common.pWrap(
       this.saveModel.findOne({ uuid: id }).lean().exec(),
     );
@@ -65,7 +65,7 @@ export class SavesService {
     return data;
   }
 
-  async DeleteOne(id: string): Promise<Save> {
+  async DeleteOne(id: string): Promise<SaveDocument> {
     const { data, error } = await Common.pWrap(
       this.saveModel.findOneAndDelete({ uuid: id }).lean().exec(),
     );
@@ -85,7 +85,7 @@ export class SavesService {
     return data;
   }
 
-  async create(createSaveDto: CreateSaveRequestDto): Promise<Save> {
+  async create(createSaveDto: CreateSaveRequestDto): Promise<SaveDocument> {
     const { data: title, error: getTitleErr } = await Common.pWrap(
       this.getTitleFromLink(createSaveDto.link),
     );

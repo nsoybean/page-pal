@@ -1,3 +1,4 @@
+import { Common } from './../library/common';
 import {
   Controller,
   HttpStatus,
@@ -24,7 +25,9 @@ export class AuthController {
   @Get('redirect')
   @UseGuards(AuthGuard('google'))
   async googleAuthRedirect(@Req() req, @Res() res: Response) {
-    const token = await this.authService.googleLogin(req.user);
+    const { data: token, error } = await Common.pWrap(
+      this.authService.googleLogin(req.user),
+    );
 
     res.cookie('page_pal_access_token', token, {
       maxAge: 2592000000,

@@ -34,4 +34,6 @@ export class Save {
   updatedAt: Date;
 }
 
+// factory method to create schema
+// to be init in module
 export const SaveSchema = SchemaFactory.createForClass(Save);
