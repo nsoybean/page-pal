@@ -8,8 +8,10 @@ import {
   Body,
   Param,
   Delete,
+  UseGuards,
 } from '@nestjs/common';
 import { SavesService } from './saves.service';
+import { AuthGuard } from '@nestjs/passport';
 import {
   CreateSaveRequestDto,
   CreateSaveResponseDto,
@@ -23,6 +25,7 @@ export class SavesController {
   constructor(private readonly saveService: SavesService) {}
 
   @Get()
+  @UseGuards(AuthGuard('jwt'))
   async findAll(@Res() response) {
     const { data: results, error } = await Common.pWrap(
       this.saveService.findAll(),

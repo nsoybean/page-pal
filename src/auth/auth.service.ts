@@ -10,6 +10,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from './schemas/user.schema';
 import { Common } from 'src/library';
 import { IGoogleLogin, IUserDetails } from './interface';
+import { v4 as uuidv4 } from 'uuid';
 @Injectable()
 export class AuthService {
   constructor(
@@ -38,12 +39,13 @@ export class AuthService {
 
     // if user found, sign user details and return token
     if (userDetails) {
-      const userPayloadToSign = {
+      const payload = {
+        sub: userDetails.uuid,
         email: userDetails.email,
       };
 
       const { data: jwtToken, error: generateJwtErr } = await Common.pWrap(
-        this.generateJwt(userPayloadToSign),
+        this.generateJwt(payload),
       );
       if (generateJwtErr) {
         throw generateJwtErr;
@@ -77,15 +79,17 @@ export class AuthService {
   async registerUser(user: IUserDetails): Promise<string> {
     try {
       const newUser = new this.userModel(user);
-
+      newUser.uuid = uuidv4();
       const { error: saveErr } = await Common.pWrap(newUser.save());
       if (saveErr) {
         throw saveErr;
       }
+
       const payload = {
-        sub: newUser.email,
-        firstName: newUser.firstName,
+        sub: newUser.uuid,
+        email: newUser.email,
       };
+
       return this.generateJwt(payload);
     } catch {
       throw new InternalServerErrorException();
@@ -93,7 +97,7 @@ export class AuthService {
   }
 
   async findUserByEmail(email: string): Promise<UserDocument> {
-    const user = this.userModel.findOne({ email });
+    const user = this.userModel.findOne({ email: email });
     return user;
   }
 

@@ -1,5 +1,6 @@
 export interface IUserDetails {
-  email?: string;
+  uuid?: string;
+  email: string;
   firstName?: string;
   lastName?: string;
   picture?: string;
@@ -9,4 +10,9 @@ export interface IUserDetails {
 export interface IGoogleLogin {
   email: string;
   access_token: string;
+}
+
+export interface IJwtPayload {
+  sub: string;
+  email: string;
 }

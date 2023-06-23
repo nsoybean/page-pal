@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { GoogleStrategy } from './strategies/google.strategy';
+import { JwtStrategy } from './strategies/jwt.strategy';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from './schemas/user.schema';
 import { JwtModule } from '@nestjs/jwt';
@@ -18,7 +19,7 @@ import 'dotenv/config';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, GoogleStrategy],
-  exports: [AuthService], // to make it accessible from other modules
+  providers: [AuthService, GoogleStrategy, JwtStrategy],
+  exports: [AuthService, JwtStrategy], // to make it accessible from other modules
 })
 export class AuthModule {}

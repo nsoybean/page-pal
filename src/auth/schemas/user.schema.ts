@@ -3,7 +3,10 @@ import { Document } from 'mongoose';
 
 @Schema()
 export class User {
-  @Prop({ lowercase: true, unique: true })
+  @Prop({ unique: true })
+  uuid: string;
+
+  @Prop({ lowercase: true, unique: true }) // TODO: consider if email should be unique (can sign up via email/ social login)
   email: string;
 
   @Prop()
