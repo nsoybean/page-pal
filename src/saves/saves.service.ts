@@ -117,10 +117,6 @@ export class SavesService {
     newSaveEntity.id = uuidv4();
     newSaveEntity.userId = ctxUserId;
     newSaveEntity.title = title;
-    console.log(
-      '🚀 ~ file: saves.service.ts:117 ~ SavesService ~ create ~ newSaveEntity:',
-      newSaveEntity,
-    );
 
     const { error: saveErr } = await Common.pWrap(newSaveEntity.save());
 
