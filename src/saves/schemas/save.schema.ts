@@ -10,13 +10,11 @@ export type SaveDocument = HydratedDocument<Save>;
  */
 @Schema()
 export class Save {
-  @Prop({
-    unique: true,
-  })
-  uuid: string;
+  @Prop({ required: true, unique: true })
+  id: string;
 
-  @Prop()
-  userUuid: string;
+  @Prop({ required: true })
+  userId: string;
 
   @Prop({ required: true })
   title: string;

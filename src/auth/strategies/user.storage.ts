@@ -1,7 +1,7 @@
 import { AsyncLocalStorage } from 'async_hooks';
 
 export interface User {
-  uuid: string;
+  id: string;
   email: string;
 }
 

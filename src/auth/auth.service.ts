@@ -40,7 +40,7 @@ export class AuthService {
     // if user found, sign user details and return token
     if (userDetails) {
       const payload = {
-        sub: userDetails.uuid,
+        sub: userDetails.id,
         email: userDetails.email,
       };
 
@@ -79,14 +79,14 @@ export class AuthService {
   async registerUser(user: IUserDetails): Promise<string> {
     try {
       const newUser = new this.userModel(user);
-      newUser.uuid = uuidv4();
+      newUser.id = uuidv4();
       const { error: saveErr } = await Common.pWrap(newUser.save());
       if (saveErr) {
         throw saveErr;
       }
 
       const payload = {
-        sub: newUser.uuid,
+        sub: newUser.id,
         email: newUser.email,
       };
 

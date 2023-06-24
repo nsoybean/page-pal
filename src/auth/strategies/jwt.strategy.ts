@@ -30,23 +30,13 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   }
 
   async validate(payload: IJwtPayload) {
-    // Note: Perform additional business logic here regarding user if necessary
-    const user = await this.userModel.findOne({ uuid: payload.sub });
-    console.log(
-      '🚀 ~ file: jwt.strategy.ts:35 ~ JwtStrategy ~ validate ~ user:',
-      user,
-    );
+    // Check if user exist
+    const user = await this.userModel.findOne({ id: payload.sub }).lean();
 
     if (!user) throw new UnauthorizedException('Please log in to continue');
 
-    // Whatever gets returned here gets attached to the req object as `req.user`
-
     // set the user for the current asynchronous context
-    const userCtx = {
-      uuid: payload.sub,
-      email: payload.email,
-    };
-    UserStorage.set(userCtx);
-    return userCtx;
+    // Whatever gets returned here gets attached to the req object as `req.user`
+    return user;
   }
 }

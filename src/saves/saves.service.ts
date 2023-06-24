@@ -8,21 +8,21 @@ import { JSDOM } from 'jsdom';
 import { Common, AppError } from 'src/library';
 import { v4 as uuidv4 } from 'uuid';
 import { parseDomain, ParseResultType } from 'parse-domain';
-import { UserStorage } from 'src/auth/strategies/user.storage';
+import { ClsService } from 'nestjs-cls';
 @Injectable()
 export class SavesService {
-  constructor(@InjectModel(Save.name) private saveModel: Model<SaveDocument>) {}
+  constructor(
+    private readonly cls: ClsService,
+    @InjectModel(Save.name) private saveModel: Model<SaveDocument>,
+  ) {}
 
   async findAll(): Promise<{ total_records: number; data: SaveDocument[] }> {
-    const userCtx = UserStorage.get();
-    console.log(
-      '🚀 ~ file: saves.service.ts:18 ~ SavesService ~ findAll ~ userCtx:',
-      userCtx,
-    );
+    const ctx = this.cls.get('ctx');
+    const ctxUserId = ctx.user.id;
 
     // find total number of docs in db
     const { data: docsCount, error: docsCountErr } = await Common.pWrap(
-      this.saveModel.countDocuments({ userUuid: userCtx.uuid }),
+      this.saveModel.countDocuments({ userId: ctxUserId }),
     );
 
     if (docsCountErr) {
@@ -35,7 +35,7 @@ export class SavesService {
     // get all docs
     // TODO @shawbin: add into server side pagination
     const { data: saves, error: findSavesErr } = await Common.pWrap(
-      this.saveModel.find({ userUuid: userCtx.uuid }).lean().exec(),
+      this.saveModel.find({ userId: ctxUserId }).lean().exec(),
     );
 
     if (findSavesErr) {
@@ -54,13 +54,11 @@ export class SavesService {
   }
 
   async findOne(id: string): Promise<SaveDocument> {
-    const userCtx = UserStorage.get();
+    const ctx = this.cls.get('ctx');
+    const ctxUserId = ctx.user.id;
 
     const { data, error } = await Common.pWrap(
-      this.saveModel
-        .findOne({ userUuid: userCtx.uuid, uuid: id })
-        .lean()
-        .exec(),
+      this.saveModel.findOne({ id: id, userId: ctxUserId }).lean().exec(),
     );
 
     if (error) {
@@ -77,11 +75,12 @@ export class SavesService {
   }
 
   async DeleteOne(id: string): Promise<SaveDocument> {
-    const userCtx = UserStorage.get();
+    const ctx = this.cls.get('ctx');
+    const ctxUserId = ctx.user.id;
 
     const { data, error } = await Common.pWrap(
       this.saveModel
-        .findOneAndDelete({ userUuid: userCtx.uuid, uuid: id })
+        .findOneAndDelete({ id: id, userId: ctxUserId })
         .lean()
         .exec(),
     );
@@ -102,7 +101,8 @@ export class SavesService {
   }
 
   async create(createSaveDto: CreateSaveRequestDto): Promise<SaveDocument> {
-    const userCtx = UserStorage.get();
+    const ctx = this.cls.get('ctx');
+    const ctxUserId = ctx.user.id;
 
     const { data: title, error: getTitleErr } = await Common.pWrap(
       this.getTitleFromLink(createSaveDto.link),
@@ -114,9 +114,13 @@ export class SavesService {
 
     // construct entity
     const newSaveEntity = new this.saveModel(createSaveDto);
-    newSaveEntity.userUuid = userCtx.uuid;
-    newSaveEntity.uuid = uuidv4();
+    newSaveEntity.id = uuidv4();
+    newSaveEntity.userId = ctxUserId;
     newSaveEntity.title = title;
+    console.log(
+      '🚀 ~ file: saves.service.ts:117 ~ SavesService ~ create ~ newSaveEntity:',
+      newSaveEntity,
+    );
 
     const { error: saveErr } = await Common.pWrap(newSaveEntity.save());
 

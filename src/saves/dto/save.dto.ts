@@ -15,10 +15,10 @@ export class GetSaveResponseDto {
   __v: string;
 
   @Exclude()
-  userUuid: string;
+  userId: string;
 
   @Expose()
-  uuid: string;
+  id: string;
 
   @Expose()
   link: string;
@@ -41,18 +41,18 @@ export class CreateSaveResponseDto {
   __v: string;
 
   @Exclude()
-  userUuid: string;
+  userId: string;
 
   @Expose()
-  uuid: string;
+  id: string;
 
-  @Exclude()
+  @Expose()
   link: string;
 
-  @Exclude()
+  @Expose()
   title: string;
 
-  @Exclude()
+  @Expose()
   createdAt: Date;
 
   @Exclude()

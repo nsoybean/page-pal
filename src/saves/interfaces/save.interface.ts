@@ -1,5 +1,5 @@
 export interface Save {
-  uuid: string;
+  id: string;
   title: string;
   img?: string;
   link: string;
