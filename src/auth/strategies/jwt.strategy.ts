@@ -1,3 +1,5 @@
+import { UserStorage } from './user.storage';
+import { Request } from 'express';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
 import { config } from 'dotenv';
@@ -12,7 +14,7 @@ config();
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {
-    const extractJwtFromCookie = (req) => {
+    const extractJwtFromCookie = (req: Request) => {
       let token = null;
       if (req && req.cookies) {
         token = req.cookies['access_token'];
@@ -28,13 +30,23 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   }
 
   async validate(payload: IJwtPayload) {
+    // Note: Perform additional business logic here regarding user if necessary
     const user = await this.userModel.findOne({ uuid: payload.sub });
+    console.log(
+      '🚀 ~ file: jwt.strategy.ts:35 ~ JwtStrategy ~ validate ~ user:',
+      user,
+    );
 
     if (!user) throw new UnauthorizedException('Please log in to continue');
 
-    return {
-      id: payload.sub,
+    // Whatever gets returned here gets attached to the req object as `req.user`
+
+    // set the user for the current asynchronous context
+    const userCtx = {
+      uuid: payload.sub,
       email: payload.email,
     };
+    UserStorage.set(userCtx);
+    return userCtx;
   }
 }

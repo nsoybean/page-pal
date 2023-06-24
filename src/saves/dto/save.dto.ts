@@ -14,6 +14,9 @@ export class GetSaveResponseDto {
   @Exclude()
   __v: string;
 
+  @Exclude()
+  userUuid: string;
+
   @Expose()
   uuid: string;
 
@@ -36,6 +39,9 @@ export class CreateSaveResponseDto {
 
   @Exclude()
   __v: string;
+
+  @Exclude()
+  userUuid: string;
 
   @Expose()
   uuid: string;

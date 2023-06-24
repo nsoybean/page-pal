@@ -1,5 +1,5 @@
 import { Model } from 'mongoose';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Save, SaveDocument } from './schemas/save.schema';
 import { CreateSaveRequestDto } from './dto/save.dto';
@@ -8,15 +8,21 @@ import { JSDOM } from 'jsdom';
 import { Common, AppError } from 'src/library';
 import { v4 as uuidv4 } from 'uuid';
 import { parseDomain, ParseResultType } from 'parse-domain';
-
+import { UserStorage } from 'src/auth/strategies/user.storage';
 @Injectable()
 export class SavesService {
   constructor(@InjectModel(Save.name) private saveModel: Model<SaveDocument>) {}
 
   async findAll(): Promise<{ total_records: number; data: SaveDocument[] }> {
+    const userCtx = UserStorage.get();
+    console.log(
+      '🚀 ~ file: saves.service.ts:18 ~ SavesService ~ findAll ~ userCtx:',
+      userCtx,
+    );
+
     // find total number of docs in db
     const { data: docsCount, error: docsCountErr } = await Common.pWrap(
-      this.saveModel.countDocuments(),
+      this.saveModel.countDocuments({ userUuid: userCtx.uuid }),
     );
 
     if (docsCountErr) {
@@ -29,7 +35,7 @@ export class SavesService {
     // get all docs
     // TODO @shawbin: add into server side pagination
     const { data: saves, error: findSavesErr } = await Common.pWrap(
-      this.saveModel.find().lean().exec(),
+      this.saveModel.find({ userUuid: userCtx.uuid }).lean().exec(),
     );
 
     if (findSavesErr) {
@@ -48,8 +54,13 @@ export class SavesService {
   }
 
   async findOne(id: string): Promise<SaveDocument> {
+    const userCtx = UserStorage.get();
+
     const { data, error } = await Common.pWrap(
-      this.saveModel.findOne({ uuid: id }).lean().exec(),
+      this.saveModel
+        .findOne({ userUuid: userCtx.uuid, uuid: id })
+        .lean()
+        .exec(),
     );
 
     if (error) {
@@ -66,8 +77,13 @@ export class SavesService {
   }
 
   async DeleteOne(id: string): Promise<SaveDocument> {
+    const userCtx = UserStorage.get();
+
     const { data, error } = await Common.pWrap(
-      this.saveModel.findOneAndDelete({ uuid: id }).lean().exec(),
+      this.saveModel
+        .findOneAndDelete({ userUuid: userCtx.uuid, uuid: id })
+        .lean()
+        .exec(),
     );
 
     if (error) {
@@ -86,6 +102,8 @@ export class SavesService {
   }
 
   async create(createSaveDto: CreateSaveRequestDto): Promise<SaveDocument> {
+    const userCtx = UserStorage.get();
+
     const { data: title, error: getTitleErr } = await Common.pWrap(
       this.getTitleFromLink(createSaveDto.link),
     );
@@ -96,6 +114,7 @@ export class SavesService {
 
     // construct entity
     const newSaveEntity = new this.saveModel(createSaveDto);
+    newSaveEntity.userUuid = userCtx.uuid;
     newSaveEntity.uuid = uuidv4();
     newSaveEntity.title = title;
 

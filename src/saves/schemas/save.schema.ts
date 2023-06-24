@@ -15,6 +15,9 @@ export class Save {
   })
   uuid: string;
 
+  @Prop()
+  userUuid: string;
+
   @Prop({ required: true })
   title: string;
 

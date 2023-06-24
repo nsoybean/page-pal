@@ -29,7 +29,7 @@ export class AuthService {
       throw new BadRequestException('Unauthenticated');
     }
 
-    // look up user
+    // look up user (email as identifier)
     const { data: userDetails, error: findUserErr } = await Common.pWrap(
       this.findUserByEmail(user.email),
     );
@@ -57,7 +57,7 @@ export class AuthService {
       };
     } else {
       // if user not found, register user, sign user details and return token
-      const { data: jwtOfNewUser, error: registerErr } = await Common.pWrap(
+      const { data: jwtToken, error: registerErr } = await Common.pWrap(
         this.registerUser(user),
       );
       if (registerErr) {
@@ -66,7 +66,7 @@ export class AuthService {
 
       return {
         email: userDetails.email,
-        access_token: jwtOfNewUser,
+        access_token: jwtToken,
       };
     }
   }

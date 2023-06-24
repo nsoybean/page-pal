@@ -21,11 +21,11 @@ import { HttpResponse, Common } from '../library';
 import { plainToInstance } from 'class-transformer';
 
 @Controller('saves')
+@UseGuards(AuthGuard('jwt'))
 export class SavesController {
   constructor(private readonly saveService: SavesService) {}
 
   @Get()
-  @UseGuards(AuthGuard('jwt'))
   async findAll(@Res() response) {
     const { data: results, error } = await Common.pWrap(
       this.saveService.findAll(),
