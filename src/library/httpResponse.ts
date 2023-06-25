@@ -1,5 +1,6 @@
+import { HttpException, HttpStatus } from '@nestjs/common';
+
 import { AppError } from './appError';
-import { HttpStatus, HttpException } from '@nestjs/common';
 
 export class HttpResponse {
   // wrapper to map error to http status error, returns 'internal server error' if no mapping is configured

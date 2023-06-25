@@ -1,19 +1,20 @@
-import { UserStorage } from './user.storage';
-import { Request } from 'express';
-import { ExtractJwt, Strategy } from 'passport-jwt';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { config } from 'dotenv';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { User, UserDocument } from '../schemas/user.schema';
-import { Model } from 'mongoose';
+import { Request } from 'express';
+import { ExtractJwt, Strategy } from 'passport-jwt';
+import { UserService } from 'src/user/user.service';
+
 import { IJwtPayload } from '../interface/index';
 
 config();
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
-  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {
+  constructor(
+    @Inject(UserService)
+    private readonly userService: UserService,
+  ) {
     const extractJwtFromCookie = (req: Request) => {
       let token = null;
       if (req && req.cookies) {
@@ -30,8 +31,8 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   }
 
   async validate(payload: IJwtPayload) {
-    // Check if user exist
-    const user = await this.userModel.findOne({ id: payload.sub }).lean();
+    // call user service to check if user exist
+    const user = await this.userService.findUserById(payload.sub);
 
     if (!user) throw new UnauthorizedException('Please log in to continue');
 

@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { SavesController } from './saves.controller';
-import { SavesService } from './saves.service';
-import { Save, SaveSchema } from './schemas/save.schema';
 import { ClsModule } from 'nestjs-cls';
+
+import { BookmarkController } from './bookmark.controller';
+import { Bookmark, BookmarkSchema } from './schemas/bookmark.schema';
+import { BookmarkService } from './bookmark.service';
 
 @Module({
   imports: [
@@ -19,9 +20,11 @@ import { ClsModule } from 'nestjs-cls';
         },
       },
     }),
-    MongooseModule.forFeature([{ name: Save.name, schema: SaveSchema }]),
+    MongooseModule.forFeature([
+      { name: Bookmark.name, schema: BookmarkSchema },
+    ]),
   ],
-  controllers: [SavesController],
-  providers: [SavesService],
+  controllers: [BookmarkController],
+  providers: [BookmarkService],
 })
-export class SavesModule {}
+export class BookmarkModule {}

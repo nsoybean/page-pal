@@ -1,21 +1,20 @@
-import { Model } from 'mongoose';
 import {
-  Injectable,
   BadRequestException,
-  NotFoundException,
+  Inject,
+  Injectable,
   InternalServerErrorException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { InjectModel } from '@nestjs/mongoose';
-import { User, UserDocument } from './schemas/user.schema';
 import { Common } from 'src/library';
+import { UserService } from 'src/user/user.service';
+
 import { IGoogleLogin, IUserDetails } from './interface';
-import { v4 as uuidv4 } from 'uuid';
 @Injectable()
 export class AuthService {
   constructor(
-    private jwtService: JwtService,
-    @InjectModel(User.name) private userModel: Model<UserDocument>,
+    private jwtService: JwtService, // @InjectModel(User.name) private userModel: Model<UserDocument>,
+    @Inject(UserService)
+    private readonly userService: UserService,
   ) {}
 
   /**
@@ -31,7 +30,7 @@ export class AuthService {
 
     // look up user (email as identifier)
     const { data: userDetails, error: findUserErr } = await Common.pWrap(
-      this.findUserByEmail(user.email),
+      this.userService.findUserByEmail(user.email),
     );
     if (findUserErr) {
       throw findUserErr;
@@ -76,14 +75,9 @@ export class AuthService {
    * @param user user details
    * @returns jwt token of new user
    */
-  async registerUser(user: IUserDetails): Promise<string> {
+  async registerUser(userDetails: IUserDetails): Promise<string> {
     try {
-      const newUser = new this.userModel(user);
-      newUser.id = uuidv4();
-      const { error: saveErr } = await Common.pWrap(newUser.save());
-      if (saveErr) {
-        throw saveErr;
-      }
+      const newUser = await this.userService.registerNewUser(userDetails);
 
       const payload = {
         sub: newUser.id,
@@ -94,11 +88,6 @@ export class AuthService {
     } catch {
       throw new InternalServerErrorException();
     }
-  }
-
-  async findUserByEmail(email: string): Promise<UserDocument> {
-    const user = this.userModel.findOne({ email: email });
-    return user;
   }
 
   /**

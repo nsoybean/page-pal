@@ -1,16 +1,17 @@
-import { Common } from './../library/common';
+import { request } from 'http';
+
 import {
   Controller,
-  HttpStatus,
   Get,
+  HttpStatus,
   Req,
   Res,
   UseGuards,
 } from '@nestjs/common';
-import { Response } from 'express';
-import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
-import { request } from 'http';
+import { Response } from 'express';
+
+import { AuthService } from './auth.service';
 
 @Controller('google')
 export class AuthController {
@@ -26,15 +27,10 @@ export class AuthController {
   @Get('redirect')
   @UseGuards(AuthGuard('google'))
   async googleAuthRedirect(@Req() req, @Res() res: Response) {
-    const { data, error } = await Common.pWrap(
-      this.authService.googleLogin(req.user),
-    );
-    if (error) {
-      return res.status(HttpStatus.UNAUTHORIZED);
-    }
+    const loginRes = await this.authService.googleLogin(req.user);
 
-    res.cookie('access_token', data.access_token);
+    res.cookie('access_token', loginRes.access_token);
 
-    return res.status(HttpStatus.OK).json(data);
+    return res.status(HttpStatus.OK).json(loginRes);
   }
 }

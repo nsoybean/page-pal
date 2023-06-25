@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import {
-  PipeTransform,
-  Injectable,
   ArgumentMetadata,
   BadRequestException,
+  Injectable,
+  PipeTransform,
 } from '@nestjs/common';
-import { validate } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
+import { validate } from 'class-validator';
 
 @Injectable()
 export class ValidationPipe implements PipeTransform<any> {
@@ -14,6 +14,8 @@ export class ValidationPipe implements PipeTransform<any> {
     if (!metatype || !this.toValidate(metatype)) {
       return value;
     }
+
+    // transform our plain JavaScript argument object into a typed object so that we can apply validation
     const object = plainToInstance(metatype, value);
     const errors = await validate(object);
     if (errors.length > 0) {
