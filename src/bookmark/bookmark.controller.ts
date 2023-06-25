@@ -45,6 +45,11 @@ export class BookmarkController {
     return GetBookmarkResponseDto.convertToDto(bookmark);
   }
 
+  @Patch(':id/archive')
+  archive(@Param('id') id: string) {
+    return this.bookmarkService.archive(id);
+  }
+
   @Patch(':id')
   update(
     @Param('id') id: string,

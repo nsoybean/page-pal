@@ -51,6 +51,9 @@ export class GetBookmarkResponseDto {
   @Exclude()
   deleted: boolean;
 
+  @Expose()
+  archived: boolean;
+
   static convertToDto(bookmark: IBookmarkDoc): GetBookmarkResponseDto {
     const dto = plainToInstance(GetBookmarkResponseDto, bookmark.toObject());
     return dto;

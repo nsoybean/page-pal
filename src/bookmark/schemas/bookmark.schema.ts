@@ -27,6 +27,9 @@ export class Bookmark {
 
   @Prop({ default: false })
   deleted: boolean;
+
+  @Prop({ default: false })
+  archived: boolean;
 }
 
 // factory method to create schema

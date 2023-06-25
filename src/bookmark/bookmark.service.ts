@@ -51,7 +51,7 @@ export class BookmarkService {
     });
 
     const bookmarks = await this.bookmarkModel
-      .find({ userId: ctxUserId })
+      .find({ userId: ctxUserId, deleted: false })
       .lean();
 
     const result: IListBookmarks = {
@@ -81,6 +81,19 @@ export class BookmarkService {
 
   update(id: string, updateBookmarkDto: UpdateBookmarkDto) {
     throw new NotImplementedException();
+  }
+
+  async archive(id: string) {
+    const bookmark = await this.findOne(id);
+
+    if (bookmark && !bookmark.archived) {
+      // change state to 'archive'
+      bookmark.archived = true;
+      bookmark.updatedAt = new Date();
+      return bookmark.save();
+    } else {
+      throw new NotFoundException();
+    }
   }
 
   async remove(id: string) {

@@ -40,6 +40,9 @@ export class CreateBookmarkResponseDto {
   @Exclude()
   deleted: boolean;
 
+  @Exclude()
+  archived: boolean;
+
   static convertToDto(
     createdBookmark: IBookmarkDoc,
   ): CreateBookmarkResponseDto {

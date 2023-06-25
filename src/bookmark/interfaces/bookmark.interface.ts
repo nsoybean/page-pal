@@ -13,6 +13,7 @@ export interface IBookmarkDoc extends Document {
   readonly createdAt: Date;
   updatedAt: Date;
   deleted: boolean;
+  archived: boolean;
 }
 
 export interface IListBookmarks {
