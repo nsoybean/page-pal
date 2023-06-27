@@ -10,6 +10,7 @@ import {
   Post,
   UseGuards,
   UseInterceptors,
+  Query,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 
@@ -34,8 +35,18 @@ export class BookmarkController {
   }
 
   @Get()
-  async findAll() {
-    const listData = await this.bookmarkService.findAll();
+  async findAll(
+    @Query('page') page?: string, // optional
+    @Query('limit') limit?: string, // optional
+  ) {
+    // TODO @sb: add validation to query param
+    const listData = await this.bookmarkService.findAll(page, limit);
+    return ListBookmarkResponseDto.convertToDto(listData);
+  }
+
+  @Get('/archive')
+  async findAllArchive() {
+    const listData = await this.bookmarkService.findAllArchive();
     return ListBookmarkResponseDto.convertToDto(listData);
   }
 

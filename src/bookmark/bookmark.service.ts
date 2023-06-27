@@ -16,6 +16,7 @@ import { CreateBookmarkDto } from './dto/create-bookmark.dto';
 import { UpdateBookmarkDto } from './dto/update-bookmark.dto';
 import { IBookmarkDoc, IListBookmarks } from './interfaces/bookmark.interface';
 import { Bookmark } from './schemas/bookmark.schema';
+import { Common } from 'src/library';
 
 @Injectable()
 export class BookmarkService {
@@ -42,7 +43,48 @@ export class BookmarkService {
     }
   }
 
-  async findAll() {
+  async findAll(page: string, limit: string): Promise<IListBookmarks> {
+    const ctx = this.cls.get('ctx');
+    const ctxUserId = ctx.user.id;
+
+    // calculate skip and limit
+    const skipLimitParam = await Common.calculateSkipAndLimit(page, limit);
+
+    let result: any = {};
+
+    if (skipLimitParam) {
+      const criteria = { userId: ctxUserId, deleted: false, archived: false };
+      const bookmarks = await this.bookmarkModel
+        .find(criteria)
+        .skip(skipLimitParam.skip)
+        .limit(skipLimitParam.limit)
+        .sort({ createdAt: 'desc' }) // sorted by createdAt desc
+        .lean();
+      result = {
+        total_records: bookmarks.length,
+        data: bookmarks,
+      };
+    } else {
+      const docCount = await this.bookmarkModel.countDocuments({
+        userId: ctxUserId,
+      });
+
+      const criteria = { userId: ctxUserId, deleted: false, archived: false };
+      const bookmarks = await this.bookmarkModel
+        .find(criteria)
+        .sort({ createdAt: 'desc' })
+        .lean();
+
+      result = {
+        total_records: docCount,
+        data: bookmarks,
+      };
+    }
+
+    return result;
+  }
+
+  async findAllArchive(): Promise<IListBookmarks> {
     const ctx = this.cls.get('ctx');
     const ctxUserId = ctx.user.id;
 
@@ -51,7 +93,7 @@ export class BookmarkService {
     });
 
     const bookmarks = await this.bookmarkModel
-      .find({ userId: ctxUserId, deleted: false })
+      .find({ userId: ctxUserId, deleted: false, archived: true })
       .lean();
 
     const result: IListBookmarks = {

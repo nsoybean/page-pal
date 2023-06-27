@@ -19,10 +19,12 @@ export class Bookmark {
   @Prop({ required: true })
   link: string;
 
-  @Prop({ type: Date, default: now() })
+  // note: do not use 'Date.now()' as this assigns a default val to the model
+  // and cause all documents to have same timestamp
+  @Prop({ type: Date, default: Date.now })
   createdAt: Date;
 
-  @Prop({ type: Date, default: now() })
+  @Prop({ type: Date, default: Date.now })
   updatedAt: Date;
 
   @Prop({ default: false })
