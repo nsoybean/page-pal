@@ -1,5 +1,5 @@
-import { Controller, Get, Req, HttpCode } from '@nestjs/common';
-import { Request } from 'express';
+import { Controller, Get } from '@nestjs/common';
+
 import { AppService } from './app.service';
 
 @Controller()
@@ -8,7 +8,7 @@ export class AppController {
 
   @Get()
   // @HttpCode(200) // uncomment to overwrite
-  getHello(@Req() request: Request): string {
+  getHello(): string {
     return this.appService.getHello();
   }
 }
