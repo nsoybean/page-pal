@@ -29,8 +29,9 @@ export class AuthController {
   async googleAuthRedirect(@Req() req, @Res() res: Response) {
     const loginRes = await this.authService.googleLogin(req.user);
 
-    res.cookie('access_token', loginRes.access_token);
-
-    return res.status(HttpStatus.OK).json(loginRes);
+    // redirect client request and set token as query param
+    res.redirect(
+      `https://stg-page-pal-ux.vercel.app/saves?access_token=${loginRes.access_token}`,
+    );
   }
 }
