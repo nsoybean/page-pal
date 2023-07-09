@@ -36,3 +36,9 @@ export class Common {
     return offsetAndLimit;
   }
 }
+
+export enum NodeEnv {
+  DEVELOPMENT = 'development',
+  STAGING = 'staging',
+  PRODUCTION = 'production',
+}
