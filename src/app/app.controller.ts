@@ -6,9 +6,13 @@ import { AppService } from './app.service';
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
-  @Get()
-  // @HttpCode(200) // uncomment to overwrite
-  getHello(): string {
-    return this.appService.getHello();
+  @Get('/health')
+  getHello(): any {
+    const response = {
+      health: 'ok',
+      version: process.env.npm_package_version,
+    };
+
+    return response;
   }
 }

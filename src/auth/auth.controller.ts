@@ -29,15 +29,19 @@ export class AuthController {
     const loginRes = await this.authService.googleLogin(req.user);
 
     // redirect client request and set token as query param
-    if (process.env.NODE_ENV === NodeEnv.DEVELOPMENT) {
-      res.redirect(
-        `http://localhost:3002/saves?access_token=${loginRes.access_token}`,
-      );
-      return res.status(HttpStatus.ACCEPTED).json(loginRes.access_token);
-    } else {
-      res.redirect(
-        `https://stg-page-pal-ux.vercel.app/saves?access_token=${loginRes.access_token}`,
-      );
+    switch (process.env.NODE_ENV) {
+      case NodeEnv.DEVELOPMENT:
+        res.redirect(
+          `${process.env.LOCAL_CLIENT_URL}?access_token=${loginRes.access_token}`,
+        );
+        return res.status(HttpStatus.ACCEPTED).json(loginRes.access_token);
+      case NodeEnv.STAGING:
+        res.redirect(
+          `${process.env.STAGING_CLIENT_URL}?access_token=${loginRes.access_token}`,
+        );
+        break;
+      default:
+        break;
     }
   }
 }
