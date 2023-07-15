@@ -33,6 +33,7 @@ export class AuthController {
       httpOnly: true,
       secure: false,
       sameSite: 'lax',
+      domain: 'vercel.app',
       maxAge: 1000 * Number(process.env.JWT_SECRET_EXPIRY_SECONDS),
     });
 
