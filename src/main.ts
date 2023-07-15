@@ -3,11 +3,13 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 import { AppModule } from './app.module';
 import { ValidationPipe } from './validation.pipe';
-
+import cookieParser from 'cookie-parser';
 import 'dotenv/config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  app.use(cookieParser()); // cookie parser middleware
 
   const config = new DocumentBuilder()
     .setTitle('Page Pal')

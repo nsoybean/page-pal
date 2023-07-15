@@ -29,16 +29,18 @@ export class AuthController {
     const loginRes = await this.authService.googleLogin(req.user);
 
     // redirect client request and set token as query param
+    res.cookie('access_token', loginRes.access_token, {
+      httpOnly: true,
+      secure: false,
+      sameSite: 'lax',
+      maxAge: 1000 * Number(process.env.JWT_SECRET_EXPIRY_SECONDS),
+    });
+
     switch (process.env.NODE_ENV) {
       case NodeEnv.DEVELOPMENT:
-        res.redirect(
-          `${process.env.LOCAL_CLIENT_URL}?access_token=${loginRes.access_token}`,
-        );
-        return res.status(HttpStatus.ACCEPTED).json(loginRes.access_token);
+        res.redirect(`${process.env.LOCAL_CLIENT_URL}`);
       case NodeEnv.STAGING:
-        res.redirect(
-          `${process.env.STAGING_CLIENT_URL}?access_token=${loginRes.access_token}`,
-        );
+        res.redirect(`${process.env.STAGING_CLIENT_URL}`);
         break;
       default:
         break;
