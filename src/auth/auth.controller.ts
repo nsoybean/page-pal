@@ -28,20 +28,28 @@ export class AuthController {
   async googleAuthRedirect(@Req() req, @Res() res: Response) {
     const loginRes = await this.authService.googleLogin(req.user);
 
-    // redirect client request and set token as query param
-    switch (process.env.NODE_ENV) {
-      case NodeEnv.DEVELOPMENT:
-        res.redirect(
-          `${process.env.LOCAL_CLIENT_URL}?access_token=${loginRes.access_token}`,
-        );
-        return res.status(HttpStatus.ACCEPTED).json(loginRes.access_token);
-      case NodeEnv.STAGING:
-        res.redirect(
-          `${process.env.STAGING_CLIENT_URL}?access_token=${loginRes.access_token}`,
-        );
-        break;
-      default:
-        break;
+    let clientRedirectUrl = '';
+    let cookieDomain = '';
+    if (process.env.NODE_ENV === NodeEnv.DEVELOPMENT) {
+      console.log('🚀 redirect to DEV env:', process.env.LOCAL_CLIENT_URL);
+      clientRedirectUrl = process.env.LOCAL_CLIENT_URL;
+    } else {
+      console.log(
+        '🚀 redirect to DEFAULT env:',
+        process.env.STAGING_CLIENT_URL,
+      );
+      cookieDomain = process.env.COOKIE_DOMAIN;
+      clientRedirectUrl = process.env.STAGING_CLIENT_URL;
     }
+
+    //  set token as cookie and redirect to client url
+    res.cookie('access_token', loginRes.access_token, {
+      httpOnly: true,
+      secure: false,
+      sameSite: 'lax',
+      domain: cookieDomain,
+      maxAge: 1000 * Number(process.env.JWT_SECRET_EXPIRY_SECONDS),
+    });
+    res.redirect(clientRedirectUrl);
   }
 }
