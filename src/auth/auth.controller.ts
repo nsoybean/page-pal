@@ -38,11 +38,11 @@ export class AuthController {
 
     switch (process.env.NODE_ENV) {
       case NodeEnv.DEVELOPMENT:
+        console.log('🚀 redirect dev env:', process.env.LOCAL_CLIENT_URL);
         res.redirect(`${process.env.LOCAL_CLIENT_URL}`);
-      case NodeEnv.STAGING:
-        res.redirect(`${process.env.STAGING_CLIENT_URL}`);
-        break;
       default:
+        console.log('🚀 redirect default env:', process.env.STAGING_CLIENT_URL);
+        res.redirect(`${process.env.STAGING_CLIENT_URL}`);
         break;
     }
   }
