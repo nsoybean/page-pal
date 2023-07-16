@@ -53,6 +53,7 @@ export class AuthService {
       return {
         email: userDetails.email,
         access_token: jwtToken,
+        picture: user.picture,
       };
     } else {
       // if user not found, register user, sign user details and return token
@@ -66,6 +67,7 @@ export class AuthService {
       return {
         email: userDetails.email,
         access_token: jwtToken,
+        picture: user.picture,
       };
     }
   }

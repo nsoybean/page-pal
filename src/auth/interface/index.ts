@@ -10,6 +10,7 @@ export interface IUserDetails {
 export interface IGoogleLogin {
   email: string;
   access_token: string;
+  picture?: string;
 }
 
 export interface IJwtPayload {
