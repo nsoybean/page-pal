@@ -15,20 +15,19 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     @Inject(UserService)
     private readonly userService: UserService,
   ) {
+    const extractJwtFromCookie = (req: Request) => {
+      let token = null;
+      if (req && req.cookies) {
+        token = req.cookies['access_token'];
+      }
+      return token || ExtractJwt.fromAuthHeaderAsBearerToken()(req);
+    };
+
     super({
-      jwtFromRequest: ExtractJwt.fromExtractors([
-        JwtStrategy.extractJWTFromCookie,
-      ]),
       ignoreExpiration: false,
       secretOrKey: process.env.JWT_SECRET,
+      jwtFromRequest: extractJwtFromCookie,
     });
-  }
-
-  private static extractJWTFromCookie(req: Request): string | null {
-    if (req.cookies && req.cookies.access_token) {
-      return req.cookies.access_token;
-    }
-    return null;
   }
 
   async validate(payload: IJwtPayload) {
