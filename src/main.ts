@@ -22,7 +22,11 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document);
 
   app.enableCors({
-    origin: ['http://localhost:3002', 'https://localhost:3002'],
+    origin: [
+      'http://localhost:3002',
+      'https://localhost:3002',
+      'https://stg-page-pal-ux.vercel.app/',
+    ],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     credentials: true,
   });
