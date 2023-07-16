@@ -41,7 +41,9 @@ export class AuthController {
     res.redirect(
       `${clientRedirectUrl}#access_token=${
         loginRes.access_token
-      }&expires_in=${28800}&token_type=bearer`,
+      }&expires_in=${28800}&token_type=bearer&email=${loginRes.email}&picture=${
+        loginRes.picture
+      }`,
     );
   }
 }
