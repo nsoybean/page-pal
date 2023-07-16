@@ -25,7 +25,7 @@ async function bootstrap() {
     origin: [
       'http://localhost:3002',
       'https://localhost:3002',
-      'https://stg-page-pal-ux.vercel.app/',
+      process.env.STAGING_CLIENT_HOST,
     ],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     credentials: true,
