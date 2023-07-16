@@ -29,27 +29,19 @@ export class AuthController {
     const loginRes = await this.authService.googleLogin(req.user);
 
     let clientRedirectUrl = '';
-    let cookieDomain = '';
     if (process.env.NODE_ENV === NodeEnv.DEVELOPMENT) {
-      console.log('🚀 redirect to DEV env:', process.env.LOCAL_CLIENT_URL);
+      console.log('🚀 DEV env:', process.env.LOCAL_CLIENT_URL);
       clientRedirectUrl = process.env.LOCAL_CLIENT_URL;
     } else {
-      console.log(
-        '🚀 redirect to DEFAULT env:',
-        process.env.STAGING_CLIENT_URL,
-      );
-      cookieDomain = process.env.COOKIE_DOMAIN;
+      console.log('🚀 DEFAULT env:', process.env.STAGING_CLIENT_URL);
       clientRedirectUrl = process.env.STAGING_CLIENT_URL;
     }
 
-    //  set token as cookie and redirect to client url
-    res.cookie('access_token', loginRes.access_token, {
-      httpOnly: true,
-      secure: false,
-      sameSite: 'lax',
-      domain: cookieDomain,
-      maxAge: 1000 * Number(process.env.JWT_SECRET_EXPIRY_SECONDS),
-    });
-    res.redirect(clientRedirectUrl);
+    // redirect to client url and set token in url
+    res.redirect(
+      `${clientRedirectUrl}#access_token=${
+        loginRes.access_token
+      }&expires_in=${28800}&token_type=bearer`,
+    );
   }
 }
