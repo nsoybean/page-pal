@@ -32,6 +32,9 @@ export class CreateBookmarkResponseDto {
   title: string;
 
   @Expose()
+  image: string;
+
+  @Expose()
   createdAt: Date;
 
   @Exclude()

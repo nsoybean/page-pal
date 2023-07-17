@@ -35,7 +35,9 @@ export class BookmarkService {
     try {
       const title = await this.getTitleFromLink(createBookmarkDto.link);
       const image = await this.getImageFromLink(createBookmarkDto.link);
+
       newBookmark.title = title;
+      newBookmark.image = image;
       newBookmark.id = uuidv4();
       newBookmark.userId = ctxUserId;
       return newBookmark.save();
@@ -61,6 +63,7 @@ export class BookmarkService {
         .limit(skipLimitParam.limit)
         .sort({ createdAt: 'desc' }) // sorted by createdAt desc
         .lean();
+
       result = {
         total_records: bookmarks.length,
         data: bookmarks,
@@ -200,8 +203,6 @@ export class BookmarkService {
       const dom = new JSDOM(httpResponse.body);
 
       const images = dom.window.document.querySelectorAll('img');
-      console.log('🚀 BookmarkService ~ getImageFromLink ~ images:', images);
-
       // iterate over images and get largest image
       let maxImageSize = 0;
       let imageSrc = null;
@@ -216,9 +217,14 @@ export class BookmarkService {
           maxImageSize = imageSize;
         }
       });
-      console.log('🚀 getImageFromLink ~ imageSrc:', imageSrc);
 
-      return imageSrc;
+      // test if image is 'fetchable'
+      const getImageResponse = await got(imageSrc);
+      if (getImageResponse) {
+        return imageSrc;
+      } else {
+        return '';
+      }
     } catch (error) {
       console.log(
         `[BkmkSvc][getImageFromLink] Failed to get image from link: ${link}, error: ${error.message}`,
