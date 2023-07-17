@@ -9,6 +9,7 @@ export interface IBookmarkDoc extends Document {
   readonly id: string;
   userId: string;
   title: string;
+  image: string;
   link: string;
   readonly createdAt: Date;
   updatedAt: Date;

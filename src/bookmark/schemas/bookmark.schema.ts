@@ -16,6 +16,9 @@ export class Bookmark {
   @Prop({ required: true })
   title: string;
 
+  @Prop()
+  image: string;
+
   @Prop({ required: true })
   link: string;
 

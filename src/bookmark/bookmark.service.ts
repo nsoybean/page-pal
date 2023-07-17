@@ -34,7 +34,10 @@ export class BookmarkService {
 
     try {
       const title = await this.getTitleFromLink(createBookmarkDto.link);
+      const image = await this.getImageFromLink(createBookmarkDto.link);
+
       newBookmark.title = title;
+      newBookmark.image = image;
       newBookmark.id = uuidv4();
       newBookmark.userId = ctxUserId;
       return newBookmark.save();
@@ -60,6 +63,7 @@ export class BookmarkService {
         .limit(skipLimitParam.limit)
         .sort({ createdAt: 'desc' }) // sorted by createdAt desc
         .lean();
+
       result = {
         total_records: bookmarks.length,
         data: bookmarks,
@@ -187,6 +191,43 @@ export class BookmarkService {
     } catch (error) {
       console.log(
         `[BkmkSvc][getTitleFromLink] Failed GET request to link: ${link}, error: ${error.message}`,
+      );
+      throw error;
+    }
+  }
+
+  async getImageFromLink(link: string): Promise<string> {
+    try {
+      const httpResponse = await got(link);
+
+      const dom = new JSDOM(httpResponse.body);
+
+      const images = dom.window.document.querySelectorAll('img');
+      // iterate over images and get largest image
+      let maxImageSize = 0;
+      let imageSrc = null;
+      images.forEach((element) => {
+        const img = element.getAttribute('src');
+        const width = element.getAttribute('width');
+        const height = element.getAttribute('height');
+
+        const imageSize = width * height;
+        if (imageSize > maxImageSize || imageSrc === 0) {
+          imageSrc = img;
+          maxImageSize = imageSize;
+        }
+      });
+
+      // test if image is 'fetchable'
+      const getImageResponse = await got(imageSrc);
+      if (getImageResponse) {
+        return imageSrc;
+      } else {
+        return '';
+      }
+    } catch (error) {
+      console.log(
+        `[BkmkSvc][getImageFromLink] Failed to get image from link: ${link}, error: ${error.message}`,
       );
       throw error;
     }
