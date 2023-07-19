@@ -197,6 +197,7 @@ export class BookmarkService {
   }
 
   async getImageFromLink(link: string): Promise<string> {
+    let imageSrc = '';
     try {
       const httpResponse = await got(link);
 
@@ -205,14 +206,13 @@ export class BookmarkService {
       const images = dom.window.document.querySelectorAll('img');
       // iterate over images and get largest image
       let maxImageSize = 0;
-      let imageSrc = null;
       images.forEach((element) => {
         const img = element.getAttribute('src');
         const width = element.getAttribute('width');
         const height = element.getAttribute('height');
 
         const imageSize = width * height;
-        if (imageSize > maxImageSize || imageSrc === 0) {
+        if (imageSize > maxImageSize || imageSrc === '') {
           imageSrc = img;
           maxImageSize = imageSize;
         }
@@ -227,9 +227,9 @@ export class BookmarkService {
       }
     } catch (error) {
       console.log(
-        `[BkmkSvc][getImageFromLink] Failed to get image from link: ${link}, error: ${error.message}`,
+        `[BkmkSvc][getImageFromLink] Failed to get image from link. Image: ${imageSrc}, link: ${link}, error: ${error.message}`,
       );
-      throw error;
+      return '';
     }
   }
 }
