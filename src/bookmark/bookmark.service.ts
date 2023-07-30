@@ -95,6 +95,7 @@ export class BookmarkService {
     const docCount = await this.bookmarkModel.countDocuments({
       userId: ctxUserId,
       archived: true,
+      deleted: false,
     });
 
     const bookmarks = await this.bookmarkModel
@@ -130,10 +131,14 @@ export class BookmarkService {
     throw new NotImplementedException();
   }
 
-  async archive(id: string) {
-    const bookmark = await this.findOne(id);
+  async archive(id: string): Promise<IBookmarkDoc> {
+    const bookmark = await this.bookmarkModel.findOne({
+      id: id,
+      deleted: false,
+      archived: false,
+    });
 
-    if (bookmark && !bookmark.archived) {
+    if (bookmark) {
       // change state to 'archive'
       bookmark.archived = true;
       bookmark.updatedAt = new Date();
@@ -143,7 +148,23 @@ export class BookmarkService {
     }
   }
 
-  async remove(id: string) {
+  async unarchive(id: string): Promise<IBookmarkDoc> {
+    const bookmark = await this.bookmarkModel.findOne({
+      id: id,
+      deleted: false,
+      archived: true,
+    });
+
+    if (bookmark) {
+      bookmark.archived = false;
+      bookmark.updatedAt = new Date();
+      return bookmark.save();
+    } else {
+      throw new NotFoundException();
+    }
+  }
+
+  async remove(id: string): Promise<IBookmarkDoc> {
     const bookmark = await this.findOne(id);
 
     if (bookmark) {
