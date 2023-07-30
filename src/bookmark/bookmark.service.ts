@@ -94,6 +94,7 @@ export class BookmarkService {
 
     const docCount = await this.bookmarkModel.countDocuments({
       userId: ctxUserId,
+      archived: true,
     });
 
     const bookmarks = await this.bookmarkModel
