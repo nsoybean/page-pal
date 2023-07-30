@@ -57,8 +57,15 @@ export class BookmarkController {
   }
 
   @Patch(':id/archive')
-  archive(@Param('id') id: string) {
-    return this.bookmarkService.archive(id);
+  async archive(@Param('id') id: string) {
+    const bookmark = await this.bookmarkService.archive(id);
+    return GetBookmarkResponseDto.convertToDto(bookmark);
+  }
+
+  @Patch(':id/unarchive')
+  async unarchive(@Param('id') id: string) {
+    const bookmark = await this.bookmarkService.unarchive(id);
+    return GetBookmarkResponseDto.convertToDto(bookmark);
   }
 
   @Patch(':id')
