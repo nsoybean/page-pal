@@ -196,17 +196,22 @@ export class BookmarkService {
       let title: string =
         dom.window.document.querySelector('title').textContent;
 
+      // temp comment out, to relook into
       // 2nd attempt: get title from url domain
+      // if (title === '') {
+      // const parseResult = parseDomain(link);
+      // if (parseResult.type === ParseResultType.Listed) {
+      //   const { subDomains, domain, topLevelDomains } = parseResult;
+      //   console.log(
+      //     `[SavesSvc][getTitleFromLink] Parsed domain for link: ${link}, subDomain: ${subDomains}, domain: ${domain}, topLevelDomain: ${topLevelDomains}`,
+      //   );
+      //   // 3rd attempt: hard coded title
+      //   title = domain || 'Article';
+      // }
+      // }
+
       if (title === '') {
-        const parseResult = parseDomain(link);
-        if (parseResult.type === ParseResultType.Listed) {
-          const { subDomains, domain, topLevelDomains } = parseResult;
-          console.log(
-            `[SavesSvc][getTitleFromLink] Parsed domain for link: ${link}, subDomain: ${subDomains}, domain: ${domain}, topLevelDomain: ${topLevelDomains}`,
-          );
-          // 3rd attempt: hard coded title
-          title = domain || 'Article';
-        }
+        title = 'Article';
       }
 
       return title;
