@@ -9,7 +9,7 @@ import got from 'got';
 import { JSDOM } from 'jsdom';
 import { Model } from 'mongoose';
 import { ClsService } from 'nestjs-cls';
-import { ParseResultType, parseDomain } from 'parse-domain';
+// import { ParseResultType, parseDomain } from 'parse-domain';
 import { v4 as uuidv4 } from 'uuid';
 
 import { CreateBookmarkDto } from './dto/create-bookmark.dto';
@@ -17,6 +17,7 @@ import { UpdateBookmarkDto } from './dto/update-bookmark.dto';
 import { IBookmarkDoc, IListBookmarks } from './interfaces/bookmark.interface';
 import { Bookmark } from './schemas/bookmark.schema';
 import { Common } from 'src/library';
+import extractDomain from 'extract-domain';
 
 @Injectable()
 export class BookmarkService {
@@ -35,8 +36,10 @@ export class BookmarkService {
     try {
       const title = await this.getTitleFromLink(createBookmarkDto.link);
       const image = await this.getImageFromLink(createBookmarkDto.link);
+      const domain = extractDomain(createBookmarkDto.link) || '';
 
       newBookmark.title = title;
+      newBookmark.domain = domain;
       newBookmark.image = image;
       newBookmark.id = uuidv4();
       newBookmark.userId = ctxUserId;

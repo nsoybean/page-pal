@@ -11,6 +11,7 @@ export interface IBookmarkDoc extends Document {
   title: string;
   image: string;
   link: string;
+  domain: string;
   readonly createdAt: Date;
   updatedAt: Date;
   deleted: boolean;
