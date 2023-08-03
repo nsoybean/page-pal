@@ -29,6 +29,9 @@ export class CreateBookmarkResponseDto {
   link: string;
 
   @Expose()
+  domain: string;
+
+  @Expose()
   title: string;
 
   @Expose()
