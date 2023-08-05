@@ -3,21 +3,27 @@ import {
   NotFoundException,
   NotImplementedException,
   UnprocessableEntityException,
+  ConflictException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import got from 'got';
 import { JSDOM } from 'jsdom';
 import { Model } from 'mongoose';
 import { ClsService } from 'nestjs-cls';
-// import { ParseResultType, parseDomain } from 'parse-domain';
 import { v4 as uuidv4 } from 'uuid';
 
 import { CreateBookmarkDto } from './dto/create-bookmark.dto';
 import { UpdateBookmarkDto } from './dto/update-bookmark.dto';
-import { IBookmarkDoc, IListBookmarks } from './interfaces/bookmark.interface';
+import {
+  IBookmarkDoc,
+  IListBookmarks,
+  IBookmarkMeta,
+  BookmarkStateEnum,
+} from './interfaces/bookmark.interface';
 import { Bookmark } from './schemas/bookmark.schema';
 import { Common } from 'src/library';
 import extractDomain from 'extract-domain';
+import { Metadata, parser } from 'html-metadata-parser';
 
 @Injectable()
 export class BookmarkService {
@@ -49,63 +55,119 @@ export class BookmarkService {
     }
   }
 
-  async findAll(page: string, limit: string): Promise<IListBookmarks> {
+  /**
+   *
+   * @param createBookmarkDto
+   * @returns IBookmarkDoc
+   * Parse url using npm library. Perform manual parsing only if first approach fails
+   */
+  async createV2(createBookmarkDto: CreateBookmarkDto): Promise<IBookmarkDoc> {
     const ctx = this.cls.get('ctx');
     const ctxUserId = ctx.user.id;
 
-    // calculate skip and limit
-    const skipLimitParam = await Common.calculateSkipAndLimit(page, limit);
+    // init doc
+    const newBookmark = new this.bookmarkModel(createBookmarkDto);
+    newBookmark.id = uuidv4();
+    newBookmark.userId = ctxUserId;
 
-    let result: any = {};
+    try {
+      // first approach: using npm lib to parse url
+      const {
+        data: npmParsedUrl,
+        error: npmParseUrlErr,
+      }: { data: IBookmarkMeta; error: Error } = await Common.pWrap(
+        this.parseUrlWithHtmlMetaDataParser(newBookmark.link),
+      );
 
-    if (skipLimitParam) {
-      const criteria = { userId: ctxUserId, deleted: false, archived: false };
-      const bookmarks = await this.bookmarkModel
-        .find(criteria)
-        .skip(skipLimitParam.skip)
-        .limit(skipLimitParam.limit)
-        .sort({ createdAt: 'desc' }) // sorted by createdAt desc
-        .lean();
+      if (npmParsedUrl) {
+        Object.assign(newBookmark, npmParsedUrl);
+        return newBookmark.save();
+      }
 
-      result = {
-        total_records: bookmarks.length,
-        data: bookmarks,
-      };
-    } else {
-      const docCount = await this.bookmarkModel.countDocuments({
-        userId: ctxUserId,
-      });
+      // second approach: manual parse
+      if (npmParseUrlErr) {
+        console.log(
+          `[BkmkSvc][parseUrlWithHtmlMetaDataParser] Failed to parse url with npm lib: ${newBookmark.link}, error: ${npmParseUrlErr.message}`,
+        );
+        const title = await this.getTitleFromLink(createBookmarkDto.link);
+        const image = await this.getImageFromLink(createBookmarkDto.link);
+        const domain = extractDomain(createBookmarkDto.link) || '';
 
-      const criteria = { userId: ctxUserId, deleted: false, archived: false };
-      const bookmarks = await this.bookmarkModel
-        .find(criteria)
-        .sort({ createdAt: 'desc' })
-        .lean();
-
-      result = {
-        total_records: docCount,
-        data: bookmarks,
-      };
+        const manualParseUrlMeta: IBookmarkMeta = {
+          title,
+          image,
+          domain,
+        };
+        Object.assign(newBookmark, manualParseUrlMeta);
+        return newBookmark.save();
+      }
+    } catch (error) {
+      throw new UnprocessableEntityException();
     }
-
-    return result;
   }
 
-  async findAllArchive(): Promise<IListBookmarks> {
+  /**
+   *
+   * @param url string
+   * @returns IBookmarkMeta
+   */
+  async parseUrlWithHtmlMetaDataParser(url: string): Promise<IBookmarkMeta> {
+    const {
+      data: parsedUrlData,
+      error: parseUrlErr,
+    }: { data: Metadata; error: Error } = await Common.pWrap(parser(url));
+    if (parseUrlErr) {
+      console.log(
+        `[BkmkSvc][parseUrlWithHtmlMetaDataParser] Failed to parse url with npm lib. Url: ${url}, error: ${parseUrlErr.message}`,
+      );
+      throw new UnprocessableEntityException();
+    }
+
+    if (Object.keys(parsedUrlData.og).length > 0) {
+      const bookmarkMetaData: IBookmarkMeta = {
+        title: parsedUrlData.og.title || 'Article', // default
+        image: parsedUrlData.og.image || '',
+        domain: parsedUrlData.og.site_name || '',
+      };
+      return bookmarkMetaData;
+    } else if (parsedUrlData.meta) {
+      const bookmarkMetaData: IBookmarkMeta = {
+        title: parsedUrlData.meta.title,
+        image: '',
+        domain: extractDomain(url) || '',
+      };
+      return bookmarkMetaData;
+    }
+  }
+
+  async findAllWithState(
+    page: string,
+    limit: string,
+    state: BookmarkStateEnum,
+  ): Promise<IListBookmarks> {
     const ctx = this.cls.get('ctx');
     const ctxUserId = ctx.user.id;
+
+    // compute skip and limit
+    const skipLimitParam = Common.calculateSkipAndLimit(page, limit);
 
     const docCount = await this.bookmarkModel.countDocuments({
       userId: ctxUserId,
-      archived: true,
-      deleted: false,
+      state: state,
     });
 
+    const criteria = {
+      userId: ctxUserId,
+      state: state,
+    };
     const bookmarks = await this.bookmarkModel
-      .find({ userId: ctxUserId, deleted: false, archived: true })
+      .find(criteria)
+      .skip(skipLimitParam.skip)
+      .limit(skipLimitParam.limit)
+      .sort({ updatedAt: 'desc' })
       .lean();
 
-    const result: IListBookmarks = {
+    const result = {
       total_records: docCount,
       data: bookmarks,
     };
@@ -120,7 +182,10 @@ export class BookmarkService {
     const bookmark = await this.bookmarkModel.findOne({
       id: id,
       userId: ctxUserId,
-      deleted: false,
+      $or: [
+        { state: BookmarkStateEnum.AVAILABLE },
+        { state: BookmarkStateEnum.ARCHIVED },
+      ],
     });
 
     if (!bookmark) {
@@ -135,15 +200,15 @@ export class BookmarkService {
   }
 
   async archive(id: string): Promise<IBookmarkDoc> {
-    const bookmark = await this.bookmarkModel.findOne({
-      id: id,
-      deleted: false,
-      archived: false,
-    });
+    const bookmark = await this.findOne(id);
 
     if (bookmark) {
-      // change state to 'archive'
-      bookmark.archived = true;
+      if (bookmark.state === BookmarkStateEnum.ARCHIVED) {
+        throw new ConflictException(
+          `Conflict with current state. Resource already in '${BookmarkStateEnum.ARCHIVED}' state`,
+        );
+      }
+      bookmark.state = BookmarkStateEnum.ARCHIVED;
       bookmark.updatedAt = new Date();
       return bookmark.save();
     } else {
@@ -152,14 +217,15 @@ export class BookmarkService {
   }
 
   async unarchive(id: string): Promise<IBookmarkDoc> {
-    const bookmark = await this.bookmarkModel.findOne({
-      id: id,
-      deleted: false,
-      archived: true,
-    });
+    const bookmark = await this.findOne(id);
 
     if (bookmark) {
-      bookmark.archived = false;
+      if (bookmark.state === BookmarkStateEnum.AVAILABLE) {
+        throw new ConflictException(
+          `Conflict with current state. Resource already in '${BookmarkStateEnum.AVAILABLE}' state`,
+        );
+      }
+      bookmark.state = BookmarkStateEnum.AVAILABLE;
       bookmark.updatedAt = new Date();
       return bookmark.save();
     } else {
@@ -171,8 +237,13 @@ export class BookmarkService {
     const bookmark = await this.findOne(id);
 
     if (bookmark) {
+      if (bookmark.state === BookmarkStateEnum.DELETED) {
+        throw new ConflictException(
+          `Conflict with current state. Resource already in '${BookmarkStateEnum.DELETED}' state`,
+        );
+      }
       // soft delete
-      bookmark.deleted = true;
+      bookmark.state = BookmarkStateEnum.DELETED;
       bookmark.updatedAt = new Date();
       return bookmark.save();
     } else {

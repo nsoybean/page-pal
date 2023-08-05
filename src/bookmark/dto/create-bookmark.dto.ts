@@ -43,12 +43,6 @@ export class CreateBookmarkResponseDto {
   @Exclude()
   updatedAt: Date;
 
-  @Exclude()
-  deleted: boolean;
-
-  @Exclude()
-  archived: boolean;
-
   static convertToDto(
     createdBookmark: IBookmarkDoc,
   ): CreateBookmarkResponseDto {

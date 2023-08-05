@@ -14,12 +14,17 @@ export class Common {
       .catch((pError) => ({ data: null, error: pError }));
   }
 
-  public static async calculateSkipAndLimit(
+  public static calculateSkipAndLimit(
     page: string,
     limit: string,
-  ): Promise<IOffsetAndLimit | null> {
+  ): IOffsetAndLimit | null {
+    // return default val
     if (!page || !limit) {
-      return null;
+      const offsetAndLimit: IOffsetAndLimit = {
+        skip: 0,
+        limit: 10,
+      };
+      return offsetAndLimit;
     }
 
     if (!parseInt(page) || !parseInt(limit)) {
