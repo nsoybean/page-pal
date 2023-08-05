@@ -21,6 +21,7 @@ import {
   ListBookmarkResponseDto,
   UpdateBookmarkDto,
 } from './dto/index';
+import { BookmarkStateEnum } from './interfaces/bookmark.interface';
 
 @Controller('bookmark')
 @UseGuards(AuthGuard('jwt'))
@@ -34,19 +35,37 @@ export class BookmarkController {
     return CreateBookmarkResponseDto.convertToDto(newBookmark);
   }
 
+  @UseInterceptors(ClassSerializerInterceptor)
+  @Post('/v2')
+  async createV2(@Body() createBookmarkDto: CreateBookmarkDto) {
+    const newBookmark = await this.bookmarkService.createV2(createBookmarkDto);
+    return CreateBookmarkResponseDto.convertToDto(newBookmark);
+  }
+
   @Get()
   async findAll(
     @Query('page') page?: string, // optional
     @Query('limit') limit?: string, // optional
   ) {
     // TODO @sb: add validation to query param
-    const listData = await this.bookmarkService.findAll(page, limit);
+    const listData = await this.bookmarkService.findAllWithState(
+      page,
+      limit,
+      BookmarkStateEnum.AVAILABLE,
+    );
     return ListBookmarkResponseDto.convertToDto(listData);
   }
 
   @Get('/archive')
-  async findAllArchive() {
-    const listData = await this.bookmarkService.findAllArchive();
+  async findAllArchive(
+    @Query('page') page?: string, // optional
+    @Query('limit') limit?: string, // optional
+  ) {
+    const listData = await this.bookmarkService.findAllWithState(
+      page,
+      limit,
+      BookmarkStateEnum.ARCHIVED,
+    );
     return ListBookmarkResponseDto.convertToDto(listData);
   }
 

@@ -49,16 +49,13 @@ export class GetBookmarkResponseDto {
   image: string;
 
   @Expose()
+  state: string;
+
+  @Exclude()
   createdAt: Date;
 
-  @Exclude()
-  updatedAt: Date;
-
-  @Exclude()
-  deleted: boolean;
-
   @Expose()
-  archived: boolean;
+  updatedAt: Date;
 
   static convertToDto(bookmark: IBookmarkDoc): GetBookmarkResponseDto {
     const dto = plainToInstance(GetBookmarkResponseDto, bookmark.toObject());

@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Date, now } from 'mongoose';
-
+import { BookmarkStateEnum } from '../interfaces/bookmark.interface';
 /**
  * The @Schema() decorator marks a class as a schema definition. It maps our 'Save' class to a MongoDB collection of the same name,
  * but with an additional “s” at the end - so the final mongo collection name will be 'saves'.
@@ -33,11 +33,8 @@ export class Bookmark {
   @Prop({ type: Date, default: Date.now })
   updatedAt: Date;
 
-  @Prop({ default: false })
-  deleted: boolean;
-
-  @Prop({ default: false })
-  archived: boolean;
+  @Prop({ default: BookmarkStateEnum.AVAILABLE })
+  state: string;
 }
 
 // factory method to create schema
