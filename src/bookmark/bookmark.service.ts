@@ -123,21 +123,20 @@ export class BookmarkService {
       throw new UnprocessableEntityException();
     }
 
-    if (Object.keys(parsedUrlData.og).length > 0) {
-      const bookmarkMetaData: IBookmarkMeta = {
-        title: parsedUrlData.og.title || 'Article', // default
-        image: parsedUrlData.og.image || '',
-        domain: parsedUrlData.og.site_name || '',
-      };
-      return bookmarkMetaData;
-    } else if (parsedUrlData.meta) {
-      const bookmarkMetaData: IBookmarkMeta = {
-        title: parsedUrlData.meta.title,
-        image: '',
-        domain: extractDomain(url) || '',
-      };
-      return bookmarkMetaData;
+    // get details from 'og' key, else 'meta' key, else hardcoded
+    const bookmarkMetaData: IBookmarkMeta = {
+      title: parsedUrlData.og?.title || parsedUrlData.meta.title || 'Article',
+      image: parsedUrlData.og?.image || '',
+      domain: parsedUrlData.og?.site_name || extractDomain(url) || '',
+    };
+
+    // ensure if image is 'accessible' by performing GET req, else reset to empty string
+    const { error } = await Common.pWrap(got(bookmarkMetaData.image));
+    if (error) {
+      bookmarkMetaData.image = '';
     }
+
+    return bookmarkMetaData;
   }
 
   async findAllWithState(
