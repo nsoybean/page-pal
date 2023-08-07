@@ -18,6 +18,7 @@ export interface IBookmarkDoc extends Document {
   image: string;
   link: string;
   domain: string;
+  color: string;
   state: BookmarkStateEnum;
   readonly createdAt: Date; // init once
   updatedAt: Date;

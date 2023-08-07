@@ -25,6 +25,9 @@ export class Bookmark {
   @Prop()
   domain: string;
 
+  @Prop()
+  color: string;
+
   // note: do not use 'Date.now()' as this assigns a default val to the model
   // and cause all documents to have same timestamp
   @Prop({ type: Date, default: Date.now })

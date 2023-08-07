@@ -11,6 +11,7 @@ import { JSDOM } from 'jsdom';
 import { Model } from 'mongoose';
 import { ClsService } from 'nestjs-cls';
 import { v4 as uuidv4 } from 'uuid';
+import randomcolor from 'randomcolor';
 
 import { CreateBookmarkDto } from './dto/create-bookmark.dto';
 import { UpdateBookmarkDto } from './dto/update-bookmark.dto';
@@ -69,6 +70,7 @@ export class BookmarkService {
     const newBookmark = new this.bookmarkModel(createBookmarkDto);
     newBookmark.id = uuidv4();
     newBookmark.userId = ctxUserId;
+    newBookmark.color = randomcolor({ luminosity: 'light' });
 
     try {
       // first approach: using npm lib to parse url
@@ -86,9 +88,6 @@ export class BookmarkService {
 
       // second approach: manual parse
       if (npmParseUrlErr) {
-        console.log(
-          `[BkmkSvc][parseUrlWithHtmlMetaDataParser] Failed to parse url with npm lib: ${newBookmark.link}, error: ${npmParseUrlErr.message}`,
-        );
         const title = await this.getTitleFromLink(createBookmarkDto.link);
         const image = await this.getImageFromLink(createBookmarkDto.link);
         const domain = extractDomain(createBookmarkDto.link) || '';
@@ -121,6 +120,14 @@ export class BookmarkService {
         `[BkmkSvc][parseUrlWithHtmlMetaDataParser] Failed to parse url with npm lib. Url: ${url}, error: ${parseUrlErr.message}`,
       );
       throw new UnprocessableEntityException();
+    }
+
+    // log for local dev
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(
+        `🚀 [parseUrlWithHtmlMetaDataParser] parsedUrlData for link ${url}:`,
+        parsedUrlData,
+      );
     }
 
     // get details from 'og' key, else 'meta' key, else hardcoded

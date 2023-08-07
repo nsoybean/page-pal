@@ -43,6 +43,9 @@ export class GetBookmarkResponseDto {
   domain: string;
 
   @Expose()
+  color: string;
+
+  @Expose()
   title: string;
 
   @Expose()
