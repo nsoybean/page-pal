@@ -23,4 +23,12 @@ export class UserService {
     newUser.id = uuidv4();
     return newUser.save();
   }
+
+  async updateLastSignIn(email: string): Promise<IUser> {
+    const user = this.userModel.findOneAndUpdate(
+      { email: email },
+      { lastSignIn: new Date() },
+    );
+    return user;
+  }
 }

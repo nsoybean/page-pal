@@ -96,6 +96,7 @@ export class BookmarkService {
           title,
           image,
           domain,
+          type: '',
         };
         Object.assign(newBookmark, manualParseUrlMeta);
         return newBookmark.save();
@@ -135,6 +136,7 @@ export class BookmarkService {
       title: parsedUrlData.og?.title || parsedUrlData.meta.title || 'Article',
       image: parsedUrlData.og?.image || '',
       domain: parsedUrlData.og?.site_name || extractDomain(url) || '',
+      type: parsedUrlData.og?.type || '',
     };
 
     // ensure if image is 'accessible' by performing GET req, else reset to empty string

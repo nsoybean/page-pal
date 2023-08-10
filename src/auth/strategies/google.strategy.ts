@@ -7,6 +7,7 @@ import { config } from 'dotenv';
 import { Strategy, VerifyCallback } from 'passport-google-oauth20';
 
 import { IUserDetails } from '../interface';
+import { NodeEnv } from './../../library/common';
 
 config();
 
@@ -37,6 +38,13 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       picture: photos[0].value,
       accessToken,
     };
+
+    if (!user && process.env.NODE_ENV === NodeEnv.DEVELOPMENT) {
+      console.log(
+        '🚀 classGoogleStrategyextendsPassportStrategy ~ user:',
+        user,
+      );
+    }
 
     done(null, user);
   }
