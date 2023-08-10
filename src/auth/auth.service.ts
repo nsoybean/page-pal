@@ -67,9 +67,6 @@ export class AuthService {
         throw registerErr;
       }
 
-      // update lastSignIn (async)
-      // this.userService.updateLastSignIn(user.email);
-
       return {
         email: userDetails.email,
         access_token: jwtToken,
