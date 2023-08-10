@@ -31,6 +31,9 @@ export class CreateBookmarkResponseDto {
   @Expose()
   domain: string;
 
+  @Exclude()
+  type: string;
+
   @Expose()
   color: string;
 

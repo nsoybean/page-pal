@@ -12,4 +12,5 @@ export interface IUser extends Document {
   lastName: string;
   picture: string;
   password: string;
+  lastSignIn: Date;
 }

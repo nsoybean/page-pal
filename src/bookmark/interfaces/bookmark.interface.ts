@@ -18,6 +18,7 @@ export interface IBookmarkDoc extends Document {
   image: string;
   link: string;
   domain: string;
+  type: string;
   color: string;
   state: BookmarkStateEnum;
   readonly createdAt: Date; // init once
@@ -28,6 +29,7 @@ export interface IBookmarkMeta {
   title: string;
   image: string;
   domain: string;
+  type: string;
 }
 
 export interface IListBookmarks {

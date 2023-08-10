@@ -50,6 +50,9 @@ export class AuthService {
         throw generateJwtErr;
       }
 
+      // update lastSignIn (async)
+      this.userService.updateLastSignIn(userDetails.email);
+
       return {
         email: userDetails.email,
         access_token: jwtToken,
@@ -63,6 +66,9 @@ export class AuthService {
       if (registerErr) {
         throw registerErr;
       }
+
+      // update lastSignIn (async)
+      // this.userService.updateLastSignIn(user.email);
 
       return {
         email: userDetails.email,
@@ -86,7 +92,8 @@ export class AuthService {
         email: newUser.email,
       };
 
-      return this.generateJwt(payload);
+      const jwt = await this.generateJwt(payload);
+      return jwt;
     } catch {
       throw new InternalServerErrorException();
     }

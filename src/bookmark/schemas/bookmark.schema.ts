@@ -25,6 +25,9 @@ export class Bookmark {
   @Prop()
   domain: string;
 
+  @Prop({ default: '' })
+  type: string;
+
   @Prop()
   color: string;
 

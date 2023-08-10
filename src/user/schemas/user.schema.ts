@@ -20,6 +20,9 @@ export class User {
 
   @Prop({ select: false })
   password: string;
+
+  @Prop({ type: Date, default: Date.now })
+  lastSignIn: Date;
 }
 
 export type UserDocument = User & Document;
