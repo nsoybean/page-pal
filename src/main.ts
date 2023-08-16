@@ -3,6 +3,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 import { AppModule } from './app.module';
 import { ValidationPipe } from './validation.pipe';
+
 import 'dotenv/config';
 
 async function bootstrap() {
@@ -29,6 +30,7 @@ async function bootstrap() {
   });
 
   const port = process.env.PORT || 3005;
+
   await app.listen(port);
 }
 bootstrap();
