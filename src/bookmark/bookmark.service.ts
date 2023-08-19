@@ -4,6 +4,7 @@ import {
   NotImplementedException,
   UnprocessableEntityException,
   ConflictException,
+  BadRequestException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import got from 'got';
@@ -13,8 +14,15 @@ import { ClsService } from 'nestjs-cls';
 import { v4 as uuidv4 } from 'uuid';
 import randomcolor from 'randomcolor';
 
-import { CreateBookmarkDto } from './dto/create-bookmark.dto';
-import { UpdateBookmarkDto } from './dto/update-bookmark.dto';
+// import { Doc } from 'yjs';
+// import { CreateBookmarkDto } from './dto/create-bookmark.dto';
+// import { UpdateBookmarkDto } from './dto/update-bookmark.dto';
+
+import {
+  CreateBookmarkDto,
+  UpdateBookmarkDto,
+  UpdateBookmarkNoteDto,
+} from './dto/index';
 import {
   IBookmarkDoc,
   IListBookmarks,
@@ -205,6 +213,30 @@ export class BookmarkService {
 
   update(id: string, updateBookmarkDto: UpdateBookmarkDto) {
     throw new NotImplementedException();
+  }
+
+  // TODO @sb: consider moving this y doc into another collection should this impact performance
+  async updateNote(id: string, updateNoteDto: UpdateBookmarkNoteDto) {
+    const bookmark = await this.bookmarkModel.findOne({
+      id: id,
+    });
+    if (bookmark.state !== BookmarkStateEnum.AVAILABLE) {
+      throw new BadRequestException(`Resource not found`);
+    }
+
+    bookmark.note = updateNoteDto.note;
+    bookmark.updatedAt = new Date();
+    return bookmark.save();
+  }
+  async fetchNote(id: string): Promise<any> {
+    const bookmark = await this.bookmarkModel.findOne({
+      id: id,
+    });
+    if (bookmark.state !== BookmarkStateEnum.AVAILABLE) {
+      throw new BadRequestException(`Resource not found`);
+    }
+
+    return bookmark.note;
   }
 
   async archive(id: string): Promise<IBookmarkDoc> {

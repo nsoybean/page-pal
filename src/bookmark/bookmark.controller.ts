@@ -20,6 +20,7 @@ import {
   CreateBookmarkResponseDto,
   ListBookmarkResponseDto,
   UpdateBookmarkDto,
+  UpdateBookmarkNoteDto,
 } from './dto/index';
 import { BookmarkStateEnum } from './interfaces/bookmark.interface';
 
@@ -84,6 +85,19 @@ export class BookmarkController {
   @Patch(':id/unarchive')
   async unarchive(@Param('id') id: string) {
     const bookmark = await this.bookmarkService.unarchive(id);
+    return GetBookmarkResponseDto.convertToDto(bookmark);
+  }
+
+  @UseInterceptors(ClassSerializerInterceptor)
+  @Patch(':id/note')
+  async updateNote(
+    @Param('id') id: string,
+    @Body() updateBookmarkNoteDto: UpdateBookmarkNoteDto,
+  ) {
+    const bookmark = await this.bookmarkService.updateNote(
+      id,
+      updateBookmarkNoteDto,
+    );
     return GetBookmarkResponseDto.convertToDto(bookmark);
   }
 
