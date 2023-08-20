@@ -69,7 +69,7 @@ export class HocuspocusModule {
       //   // saveToDatabase(data.document, data.documentName);
       //   try {
       //     const doc = await bookmarkService.updateNote(
-      //       '5912f69a-d2e9-481c-8b4d-828711ab7cdc',
+      //       '5999b7cdc',
       //       document,
       //     );
       //     console.log(
@@ -88,7 +88,7 @@ export class HocuspocusModule {
       //   // loadFromDatabase(data.documentName) || createInitialDocTemplate()
       //   console.log('🚀 return data');
       //   const doc = await bookmarkService.fetchNote(
-      //     '5912f69a-d2e9-481c-8b4d-828711ab7cdc',
+      //     '5999b7cdc',
       //   );
       //   return doc;
       // },
@@ -99,7 +99,7 @@ export class HocuspocusModule {
       //       console.log('🚀 state:', state);
       //       try {
       //         const doc = await bookmarkService.updateNote(
-      //           '5912f69a-d2e9-481c-8b4d-828711ab7cdc',
+      //           '5999b7cdc',
       //           state,
       //         );
       //         console.log(
@@ -117,7 +117,7 @@ export class HocuspocusModule {
       //     },
       //     fetch: async ({ documentName }) => {
       //       const doc = await bookmarkService.fetchNote(
-      //         '5912f69a-d2e9-481c-8b4d-828711ab7cdc',
+      //         '5999b7cdc',
       //       );
       //       console.log('🚀 ~ fetch doc:', doc);
       //       return doc;
