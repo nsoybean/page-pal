@@ -220,7 +220,10 @@ export class BookmarkService {
     const bookmark = await this.bookmarkModel.findOne({
       id: id,
     });
-    if (bookmark.state !== BookmarkStateEnum.AVAILABLE) {
+    if (
+      bookmark.state !== BookmarkStateEnum.AVAILABLE &&
+      bookmark.state !== BookmarkStateEnum.ARCHIVED
+    ) {
       throw new BadRequestException(`Resource not found`);
     }
 
