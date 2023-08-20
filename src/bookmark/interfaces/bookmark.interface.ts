@@ -23,6 +23,7 @@ export interface IBookmarkDoc extends Document {
   state: BookmarkStateEnum;
   readonly createdAt: Date; // init once
   updatedAt: Date;
+  note?: string;
 }
 
 export interface IBookmarkMeta {

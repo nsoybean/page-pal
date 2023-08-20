@@ -1,3 +1,4 @@
+import { BookmarkModule } from 'src/bookmark/bookmark.module';
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { UserModule } from 'src/user/user.module';
@@ -16,6 +17,7 @@ import 'dotenv/config';
       signOptions: { expiresIn: process.env.JWT_SECRET_EXPIRY_SECONDS + 's' },
     }),
     UserModule,
+    BookmarkModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, GoogleStrategy, JwtStrategy],

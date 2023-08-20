@@ -41,6 +41,9 @@ export class Bookmark {
 
   @Prop({ default: BookmarkStateEnum.AVAILABLE })
   state: string;
+
+  @Prop({ default: '' })
+  note: string;
 }
 
 // factory method to create schema

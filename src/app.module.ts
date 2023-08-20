@@ -6,6 +6,7 @@ import { AppService } from './app/app.service';
 import { AuthModule } from './auth/auth.module';
 import { BookmarkModule } from './bookmark/bookmark.module';
 import { UserModule } from './user/user.module';
+import { HocuspocusModule } from './hocuspocus/hocuspocus.module';
 import 'dotenv/config';
 
 @Module({
@@ -14,6 +15,7 @@ import 'dotenv/config';
     AuthModule, // handling authn and authz
     BookmarkModule, // bookmarks
     UserModule, // user management
+    HocuspocusModule, // collab editing BE for tiptap
   ],
   controllers: [AppController], // handles HTTP requests
   providers: [AppService], // perform complex tasks
