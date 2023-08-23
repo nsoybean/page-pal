@@ -143,7 +143,7 @@ export class BookmarkService {
       title: parsedUrlData.og?.title || parsedUrlData.meta.title || 'Article',
       image:
         parsedUrlData.og?.image ||
-        (parsedUrlData.images.length >= 0 ? parsedUrlData.images[0].src : ''),
+        (parsedUrlData.images.length > 0 ? parsedUrlData.images[0].src : ''),
       domain: parsedUrlData.og?.site_name || extractDomain(url) || '',
       type: parsedUrlData.og?.type || '',
     };
