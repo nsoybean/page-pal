@@ -44,10 +44,16 @@ export class CreateBookmarkResponseDto {
   image: string;
 
   @Expose()
+  state: string;
+
+  @Expose()
   createdAt: Date;
 
   @Exclude()
   updatedAt: Date;
+
+  @Exclude()
+  note: Date;
 
   static convertToDto(
     createdBookmark: IBookmarkDoc,
