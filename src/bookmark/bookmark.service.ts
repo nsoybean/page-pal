@@ -33,7 +33,6 @@ import { Bookmark } from './schemas/bookmark.schema';
 import { Common } from 'src/library';
 import extractDomain from 'extract-domain';
 import { Metadata, parser } from 'html-metadata-parser';
-
 @Injectable()
 export class BookmarkService {
   constructor(
@@ -142,7 +141,9 @@ export class BookmarkService {
     // get details from 'og' key, else 'meta' key, else hardcoded
     const bookmarkMetaData: IBookmarkMeta = {
       title: parsedUrlData.og?.title || parsedUrlData.meta.title || 'Article',
-      image: parsedUrlData.og?.image || '',
+      image:
+        parsedUrlData.og?.image ||
+        (parsedUrlData.images.length >= 0 ? parsedUrlData.images[0].src : ''),
       domain: parsedUrlData.og?.site_name || extractDomain(url) || '',
       type: parsedUrlData.og?.type || '',
     };
