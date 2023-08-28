@@ -5,6 +5,7 @@ import {
   UnprocessableEntityException,
   ConflictException,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import got from 'got';
@@ -35,6 +36,8 @@ import extractDomain from 'extract-domain';
 import { Metadata, parser } from 'html-metadata-parser';
 @Injectable()
 export class BookmarkService {
+  private readonly logger = new Logger(BookmarkService.name);
+
   constructor(
     private readonly cls: ClsService,
     @InjectModel(Bookmark.name) private bookmarkModel: Model<IBookmarkDoc>,
@@ -124,17 +127,18 @@ export class BookmarkService {
       error: parseUrlErr,
     }: { data: Metadata; error: Error } = await Common.pWrap(parser(url));
     if (parseUrlErr) {
-      console.log(
-        `[BkmkSvc][parseUrlWithHtmlMetaDataParser] Failed to parse url with npm lib. Url: ${url}, error: ${parseUrlErr.message}`,
+      this.logger.debug(
+        `[parseUrlWithHtmlMetaDataParser] Failed to parse url with npm lib. Url: ${url}, error: ${parseUrlErr.message}`,
       );
       throw new UnprocessableEntityException();
     }
 
     // log for local dev
     if (process.env.NODE_ENV !== 'production') {
-      console.log(
-        `🚀 [parseUrlWithHtmlMetaDataParser] parsedUrlData for link ${url}:`,
-        parsedUrlData,
+      this.logger.debug(
+        `[parseUrlWithHtmlMetaDataParser] parsedUrlData for link ${url}:${JSON.stringify(
+          parsedUrlData,
+        )}`,
       );
     }
 
@@ -336,8 +340,8 @@ export class BookmarkService {
 
       return title;
     } catch (error) {
-      console.log(
-        `[BkmkSvc][getTitleFromLink] Failed GET request to link: ${link}, error: ${error.message}`,
+      this.logger.debug(
+        `[getTitleFromLink] Failed GET request to link: ${link}, error: ${error.message}`,
       );
       throw error;
     }
@@ -373,7 +377,7 @@ export class BookmarkService {
         return '';
       }
     } catch (error) {
-      console.log(
+      this.logger.debug(
         `[BkmkSvc][getImageFromLink] Failed to get image from link. Image: ${imageSrc}, link: ${link}, error: ${error.message}`,
       );
       return '';
