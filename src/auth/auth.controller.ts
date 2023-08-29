@@ -15,13 +15,13 @@ import { AuthService } from './auth.service';
 import { NodeEnv } from './../library/common';
 config();
 
-@Controller('google')
+@Controller('login')
 export class AuthController {
   private readonly logger = new Logger(AuthController.name);
   constructor(private readonly authService: AuthService) {}
 
   // authentication using 'google' strategy from the passport module
-  @Get()
+  @Get('/google')
   @UseGuards(AuthGuard('google'))
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   async googleAuth(@Req() req, @Res() res: Response) {
@@ -29,7 +29,7 @@ export class AuthController {
   }
 
   // auth redirect
-  @Get('redirect')
+  @Get('/redirect')
   @UseGuards(AuthGuard('google'))
   async googleAuthRedirect(@Req() req, @Res() res: Response) {
     const loginRes = await this.authService.googleLogin(req.user);
