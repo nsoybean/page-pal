@@ -22,6 +22,9 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     });
   }
 
+  /**
+   * method executes after Google returns the requested user information
+   */
   async validate(
     accessToken: string,
     refreshToken: string,
