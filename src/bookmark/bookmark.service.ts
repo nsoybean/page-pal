@@ -14,6 +14,7 @@ import { Model } from 'mongoose';
 import { ClsService } from 'nestjs-cls';
 import { v4 as uuidv4 } from 'uuid';
 import randomcolor from 'randomcolor';
+import getMetaData, { MetaData } from 'metadata-scraper';
 
 // import { Doc } from 'yjs';
 // import { CreateBookmarkDto } from './dto/create-bookmark.dto';
@@ -106,9 +107,52 @@ export class BookmarkService {
           title,
           image,
           domain,
-          type: '',
         };
         Object.assign(newBookmark, manualParseUrlMeta);
+        return newBookmark.save();
+      }
+    } catch (error) {
+      throw new UnprocessableEntityException();
+    }
+  }
+
+  /**
+   *
+   * @param createBookmarkDto
+   * @returns IBookmarkDoc
+   * Parse url using npm library. Perform manual parsing only if first approach fails
+   */
+  async createV3(createBookmarkDto: CreateBookmarkDto): Promise<IBookmarkDoc> {
+    const ctx = this.cls.get('ctx');
+    const ctxUserId = ctx.user.id;
+
+    // init doc
+    const newBookmark = new this.bookmarkModel(createBookmarkDto);
+    newBookmark.id = uuidv4();
+    newBookmark.userId = ctxUserId;
+    newBookmark.color = randomcolor({ luminosity: 'light' });
+
+    // parse using metadata-scraper
+    try {
+      const { data: metaData }: { data: MetaData; error: Error } =
+        await Common.pWrap(getMetaData(newBookmark.link));
+
+      if (metaData) {
+        newBookmark.image = metaData.image;
+        newBookmark.title = metaData.title;
+        newBookmark.description = metaData.description;
+        newBookmark.type = metaData.type;
+        newBookmark.icon = metaData.icon;
+        newBookmark.domain = metaData.provider;
+
+        // log for local dev
+        if (process.env.NODE_ENV !== 'production') {
+          this.logger.debug(
+            `metadata-scraper for link ${newBookmark.link}:${JSON.stringify(
+              newBookmark,
+            )}`,
+          );
+        }
         return newBookmark.save();
       }
     } catch (error) {
@@ -152,6 +196,8 @@ export class BookmarkService {
       image: parsedUrlData.og?.image || '',
       domain: parsedUrlData.og?.site_name || extractDomain(url) || '',
       type: parsedUrlData.og?.type || '',
+      description:
+        parsedUrlData.meta?.description || parsedUrlData.og?.description || '',
     };
 
     // ensure if image is 'accessible' by performing GET req, else reset to empty string

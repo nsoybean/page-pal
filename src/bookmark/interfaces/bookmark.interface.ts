@@ -24,13 +24,16 @@ export interface IBookmarkDoc extends Document {
   readonly createdAt: Date; // init once
   updatedAt: Date;
   note?: string;
+  description?: string;
+  icon?: string;
 }
 
 export interface IBookmarkMeta {
   title: string;
   image: string;
   domain: string;
-  type: string;
+  type?: string;
+  description?: string;
 }
 
 export interface IListBookmarks {

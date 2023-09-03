@@ -55,6 +55,9 @@ export class CreateBookmarkResponseDto {
   @Exclude()
   note: Date;
 
+  @Expose()
+  description: string;
+
   static convertToDto(
     createdBookmark: IBookmarkDoc,
   ): CreateBookmarkResponseDto {

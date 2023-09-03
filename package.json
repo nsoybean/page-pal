@@ -38,6 +38,7 @@
     "html-metadata-parser": "^2.0.4",
     "joi": "^17.9.2",
     "jsdom": "^22.1.0",
+    "metadata-scraper": "^0.2.61",
     "mongoose": "^7.2.3",
     "nestjs-cls": "^3.5.0",
     "parse-domain": "^4.1.0",
