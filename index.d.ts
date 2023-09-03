@@ -1,3 +1,4 @@
+import Meta from 'html-metadata-parser';
 declare module 'html-metadata-parser' {
   export declare class Metadata {
     meta: Meta;

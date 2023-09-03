@@ -46,6 +46,9 @@ export class GetBookmarkResponseDto {
   type: string;
 
   @Expose()
+  description: string;
+
+  @Expose()
   color: string;
 
   @Expose()
@@ -58,6 +61,9 @@ export class GetBookmarkResponseDto {
   state: string;
 
   @Exclude()
+  icon: string;
+
+  @Exclude()
   createdAt: Date;
 
   @Expose()
@@ -65,6 +71,60 @@ export class GetBookmarkResponseDto {
 
   static convertToDto(bookmark: IBookmarkDoc): GetBookmarkResponseDto {
     const dto = plainToInstance(GetBookmarkResponseDto, bookmark.toObject());
+    return dto;
+  }
+}
+export class GetBookmarkByIdResponseDto {
+  @Exclude()
+  _id: string;
+
+  @Exclude()
+  __v: string;
+
+  @Exclude()
+  userId: string;
+
+  @Expose()
+  id: string;
+
+  @Expose()
+  link: string;
+
+  @Expose()
+  domain: string;
+
+  @Expose()
+  type: string;
+
+  @Expose()
+  description: string;
+
+  @Expose()
+  color: string;
+
+  @Expose()
+  title: string;
+
+  @Expose()
+  image: string;
+
+  @Expose()
+  state: string;
+
+  @Expose()
+  icon: string;
+
+  @Expose()
+  createdAt: Date;
+
+  @Expose()
+  updatedAt: Date;
+
+  static convertToDto(bookmark: IBookmarkDoc): GetBookmarkByIdResponseDto {
+    const dto = plainToInstance(
+      GetBookmarkByIdResponseDto,
+      bookmark.toObject(),
+    );
     return dto;
   }
 }

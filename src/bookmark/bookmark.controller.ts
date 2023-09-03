@@ -21,6 +21,7 @@ import {
   ListBookmarkResponseDto,
   UpdateBookmarkDto,
   UpdateBookmarkNoteDto,
+  GetBookmarkByIdResponseDto,
 } from './dto/index';
 import { BookmarkStateEnum } from './interfaces/bookmark.interface';
 
@@ -40,6 +41,13 @@ export class BookmarkController {
   @Post('/v2')
   async createV2(@Body() createBookmarkDto: CreateBookmarkDto) {
     const newBookmark = await this.bookmarkService.createV2(createBookmarkDto);
+    return CreateBookmarkResponseDto.convertToDto(newBookmark);
+  }
+
+  @UseInterceptors(ClassSerializerInterceptor)
+  @Post('/v3')
+  async createV3(@Body() createBookmarkDto: CreateBookmarkDto) {
+    const newBookmark = await this.bookmarkService.createV3(createBookmarkDto);
     return CreateBookmarkResponseDto.convertToDto(newBookmark);
   }
 
@@ -73,7 +81,7 @@ export class BookmarkController {
   @Get(':id')
   async findOne(@Param('id') id: string) {
     const bookmark = await this.bookmarkService.findOne(id);
-    return GetBookmarkResponseDto.convertToDto(bookmark);
+    return GetBookmarkByIdResponseDto.convertToDto(bookmark);
   }
 
   @Patch(':id/archive')

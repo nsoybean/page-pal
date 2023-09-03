@@ -28,6 +28,9 @@ export class Bookmark {
   @Prop({ default: '' })
   type: string;
 
+  @Prop({ default: '' })
+  description: string;
+
   @Prop()
   color: string;
 
@@ -44,6 +47,9 @@ export class Bookmark {
 
   @Prop({ default: '' })
   note: string;
+
+  @Prop({ default: '' })
+  icon: string;
 }
 
 // factory method to create schema
