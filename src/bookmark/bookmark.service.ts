@@ -133,30 +133,34 @@ export class BookmarkService {
     newBookmark.color = randomcolor({ luminosity: 'light' });
 
     // parse using metadata-scraper
-    try {
-      const { data: metaData }: { data: MetaData; error: Error } =
-        await Common.pWrap(getMetaData(newBookmark.link));
+    const {
+      data: metaData,
+      error: getMetaDataErr,
+    }: { data: MetaData; error: Error } = await Common.pWrap(
+      getMetaData(newBookmark.link),
+    );
 
-      if (metaData) {
-        newBookmark.image = metaData.image;
-        newBookmark.title = metaData.title;
-        newBookmark.description = metaData.description;
-        newBookmark.type = metaData.type;
-        newBookmark.icon = metaData.icon;
-        newBookmark.domain = metaData.provider;
-
-        // log for local dev
-        if (process.env.NODE_ENV !== 'production') {
-          this.logger.debug(
-            `metadata-scraper for link ${newBookmark.link}:${JSON.stringify(
-              newBookmark,
-            )}`,
-          );
-        }
-        return newBookmark.save();
-      }
-    } catch (error) {
+    if (getMetaDataErr) {
       throw new UnprocessableEntityException();
+    }
+
+    if (metaData) {
+      newBookmark.image = metaData.image;
+      newBookmark.title = metaData.title;
+      newBookmark.description = metaData.description;
+      newBookmark.type = metaData.type;
+      newBookmark.icon = metaData.icon;
+      newBookmark.domain = metaData.provider;
+
+      // log for local dev
+      if (process.env.NODE_ENV !== 'production') {
+        this.logger.debug(
+          `metadata-scraper for link ${newBookmark.link}:${JSON.stringify(
+            newBookmark,
+          )}`,
+        );
+      }
+      return newBookmark.save();
     }
   }
 
