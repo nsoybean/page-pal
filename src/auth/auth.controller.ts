@@ -24,9 +24,7 @@ export class AuthController {
   @Get('/google')
   @UseGuards(GoogleOAuthGuard)
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  async googleAuth(@Req() req, @Res() res: Response) {
-    res.json('okay');
-  }
+  async googleAuth() {}
 
   // auth redirect
   @Get('/redirect')
@@ -45,6 +43,7 @@ export class AuthController {
 
     // redirect to client url and set token in url
     res.redirect(
+      302,
       `${clientRedirectUrl}#access_token=${
         loginRes.access_token
       }&expires_in=${28800}&token_type=bearer&email=${loginRes.email}&picture=${
