@@ -25,7 +25,7 @@ async function bootstrap() {
       'https://localhost:3002',
       process.env.STAGING_CLIENT_HOST,
     ],
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     credentials: true,
   });
 

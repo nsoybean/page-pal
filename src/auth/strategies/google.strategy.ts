@@ -1,7 +1,7 @@
 /**
  * Core of google login implementation
  */
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { config } from 'dotenv';
 import { Strategy, VerifyCallback } from 'passport-google-oauth20';
@@ -13,6 +13,7 @@ config();
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
+  private readonly logger = new Logger(GoogleStrategy.name);
   constructor() {
     super({
       clientID: process.env.GOOGLE_CLIENT_ID,
@@ -42,12 +43,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       accessToken,
     };
 
-    if (!user && process.env.NODE_ENV === NodeEnv.DEVELOPMENT) {
-      console.log(
-        '🚀 classGoogleStrategyextendsPassportStrategy ~ user:',
-        user,
-      );
-    }
+    this.logger.debug(`user: ${JSON.stringify(user)}`);
 
     done(null, user);
   }

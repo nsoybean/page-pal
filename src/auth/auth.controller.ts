@@ -7,6 +7,7 @@ import {
   UseGuards,
   Logger,
   Injectable,
+  Request,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { config } from 'dotenv';
@@ -21,16 +22,17 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   // authentication using 'google' strategy from the passport module
-  @Get('/google')
+  @Get('google')
   @UseGuards(GoogleOAuthGuard)
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  async googleAuth() {}
+  async googleAuth(@Request() req) {}
 
-  // auth redirect
-  @Get('/redirect')
+  // callback Google calls after authentication
+  @Get('redirect')
   @UseGuards(GoogleOAuthGuard)
   async googleAuthRedirect(@Req() req, @Res() res: Response) {
     const loginRes = await this.authService.googleLogin(req.user);
+    this.logger.debug(`loginRes: ${JSON.stringify(loginRes)}`);
 
     let clientRedirectUrl = '';
     if (process.env.NODE_ENV === NodeEnv.DEVELOPMENT) {
