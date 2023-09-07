@@ -32,7 +32,6 @@ export class AuthController {
   @UseGuards(GoogleOAuthGuard)
   async googleAuthRedirect(@Req() req, @Res() res: Response) {
     const loginRes = await this.authService.googleLogin(req.user);
-    this.logger.debug(`loginRes: ${JSON.stringify(loginRes)}`);
 
     let clientRedirectUrl = '';
     if (process.env.NODE_ENV === NodeEnv.DEVELOPMENT) {

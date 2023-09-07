@@ -43,8 +43,6 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       accessToken,
     };
 
-    this.logger.debug(`user: ${JSON.stringify(user)}`);
-
     done(null, user);
   }
 }

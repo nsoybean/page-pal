@@ -15,7 +15,7 @@ import 'dotenv/config';
     AuthModule, // handling authn and authz
     BookmarkModule, // bookmarks
     UserModule, // user management
-    HocuspocusModule, // collab editing BE for tiptap
+    // HocuspocusModule, // collab editing BE for tiptap
   ],
   controllers: [AppController], // handles HTTP requests
   providers: [AppService], // perform complex tasks
