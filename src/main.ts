@@ -23,7 +23,7 @@ async function bootstrap() {
     origin: [
       'http://localhost:3002',
       'https://localhost:3002',
-      process.env.STAGING_CLIENT_HOST,
+      process.env.CLIENT_HOST,
     ],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     credentials: true,

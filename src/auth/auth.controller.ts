@@ -33,14 +33,7 @@ export class AuthController {
   async googleAuthRedirect(@Req() req, @Res() res: Response) {
     const loginRes = await this.authService.googleLogin(req.user);
 
-    let clientRedirectUrl = '';
-    if (process.env.NODE_ENV === NodeEnv.DEVELOPMENT) {
-      this.logger.debug(`env: ${process.env.LOCAL_CLIENT_URL}`);
-      clientRedirectUrl = process.env.LOCAL_CLIENT_URL;
-    } else {
-      this.logger.debug(`env: ${process.env.STAGING_CLIENT_URL}`);
-      clientRedirectUrl = process.env.STAGING_CLIENT_URL;
-    }
+    const clientRedirectUrl = process.env.CLIENT_URL;
 
     // redirect to client url and set token in url
     res.redirect(
