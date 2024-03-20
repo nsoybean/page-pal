@@ -9,6 +9,8 @@ export interface IUserDetails {
 
 export interface IGoogleLogin {
   email: string;
+  firstName: string;
+  lastName: string;
   access_token: string;
   picture?: string;
 }
