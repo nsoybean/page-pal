@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
-@Schema()
+@Schema({ timestamps: true })
 export class User {
   @Prop({ unique: true })
   id: string;
@@ -23,6 +23,11 @@ export class User {
 
   @Prop({ type: Date, default: Date.now })
   lastSignIn: Date;
+
+  @Prop({ default: false })
+  isAdmin: boolean;
+
+  timestamps: true;
 }
 
 export type UserDocument = User & Document;

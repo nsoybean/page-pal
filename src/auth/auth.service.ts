@@ -55,6 +55,8 @@ export class AuthService {
 
       return {
         email: userDetails.email,
+        firstName: userDetails.firstName,
+        lastName: userDetails.lastName,
         access_token: jwtToken,
         picture: user.picture,
       };
@@ -69,6 +71,8 @@ export class AuthService {
 
       return {
         email: userDetails.email,
+        firstName: userDetails.firstName,
+        lastName: userDetails.lastName,
         access_token: jwtToken,
         picture: user.picture,
       };
