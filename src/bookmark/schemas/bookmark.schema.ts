@@ -1,5 +1,4 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Date, now } from 'mongoose';
 import { BookmarkStateEnum } from '../interfaces/bookmark.interface';
 /**
  * The @Schema() decorator marks a class as a schema definition. It maps our 'Save' class to a MongoDB collection of the same name,
