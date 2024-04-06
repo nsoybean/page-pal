@@ -6,6 +6,8 @@ import { ClsModule } from 'nestjs-cls';
 import { TagController } from './tag.controller';
 import { Tag, TagSchema } from './schemas/tag.schema';
 import { TagService } from './tag.service';
+import { Bookmark, BookmarkSchema } from 'src/bookmark/schemas/bookmark.schema';
+import { UserModule } from 'src/user/user.module';
 
 @Module({
   imports: [
@@ -21,7 +23,11 @@ import { TagService } from './tag.service';
         },
       },
     }),
-    MongooseModule.forFeature([{ name: Tag.name, schema: TagSchema }]),
+    UserModule,
+    MongooseModule.forFeature([
+      { name: Tag.name, schema: TagSchema },
+      { name: Bookmark.name, schema: BookmarkSchema },
+    ]),
   ],
   controllers: [TagController],
   providers: [TagService],

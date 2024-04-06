@@ -11,6 +11,8 @@ import {
   UseGuards,
   UseInterceptors,
   Query,
+  Req,
+  BadRequestException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 
@@ -64,7 +66,6 @@ export class BookmarkController {
     );
     return ListBookmarkResponseDto.convertToDto(listData);
   }
-
   @Get('/archive')
   async findAllArchive(
     @Query('page') page?: string, // optional
@@ -121,5 +122,18 @@ export class BookmarkController {
   async remove(@Param('id') id: string) {
     const bookmark = await this.bookmarkService.remove(id);
     return GetBookmarkResponseDto.convertToDto(bookmark);
+  }
+
+  @Patch(':id/tags')
+  async addTag(@Param('id') id: string, @Body() body: { tags: string[] }) {
+    // validate length of tags
+    const MAX_LIMIT = 5;
+    if (0 > body?.tags?.length || body?.tags?.length > MAX_LIMIT) {
+      throw new BadRequestException('Tags length should be between 1 and 5');
+    }
+
+    await this.bookmarkService.addTags(id, body.tags);
+
+    return id;
   }
 }

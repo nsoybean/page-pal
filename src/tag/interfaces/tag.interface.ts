@@ -8,7 +8,13 @@ import { Document } from 'mongoose';
 
 export interface ITagDoc extends Document {
   readonly id: string;
+  name: string;
   userId: string;
   readonly createdAt: Date; // init once
   updatedAt: Date;
+}
+
+export interface IUpdateTag {
+  id?: string;
+  name: string;
 }
