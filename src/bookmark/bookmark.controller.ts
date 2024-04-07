@@ -49,7 +49,9 @@ export class BookmarkController {
   @UseInterceptors(ClassSerializerInterceptor)
   @Post('/v3')
   async createV3(@Body() createBookmarkDto: CreateBookmarkDto) {
-    const newBookmark = await this.bookmarkService.createV3(createBookmarkDto);
+    const newBookmark = await this.bookmarkService.createV3(
+      createBookmarkDto.link,
+    );
     return CreateBookmarkResponseDto.convertToDto(newBookmark);
   }
 

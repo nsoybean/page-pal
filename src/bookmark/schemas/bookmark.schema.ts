@@ -31,8 +31,9 @@ export class Bookmark {
   @Prop({ default: '' })
   description: string;
 
-  @Prop()
-  color: string;
+  // remove color: 07/04/24
+  // @Prop()
+  // color: string;
 
   @Prop({ type: [String], ref: Tag.name })
   tags: Tag[];
@@ -49,8 +50,9 @@ export class Bookmark {
   @Prop({ default: BookmarkStateEnum.AVAILABLE })
   state: string;
 
-  @Prop({ default: '' })
-  note: string;
+  // remove note: 07/04/24
+  // @Prop({ default: '' })
+  // note: string;
 
   @Prop({ default: '' })
   icon: string;

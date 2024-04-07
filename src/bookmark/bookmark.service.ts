@@ -129,15 +129,14 @@ export class BookmarkService {
    * @returns IBookmarkDoc
    * Parse url using npm library. Perform manual parsing only if first approach fails
    */
-  async createV3(createBookmarkDto: CreateBookmarkDto): Promise<IBookmarkDoc> {
+  async createV3(link: string): Promise<IBookmarkDoc> {
     const ctx = this.cls.get('ctx');
     const ctxUserId = ctx.user.id;
 
     // init doc
-    const newBookmark = new this.bookmarkModel(createBookmarkDto);
+    const newBookmark = new this.bookmarkModel({ link });
     newBookmark.id = uuidv4();
     newBookmark.userId = ctxUserId;
-    newBookmark.color = randomcolor({ luminosity: 'light' });
 
     // parse using metadata-scraper
     const {
@@ -153,8 +152,8 @@ export class BookmarkService {
 
     if (metaData) {
       newBookmark.image = metaData.image;
-      newBookmark.title = metaData.title;
-      newBookmark.description = metaData.description;
+      newBookmark.title = metaData?.title || link;
+      newBookmark.description = metaData?.description || '';
       newBookmark.type = metaData.type;
       newBookmark.icon = metaData.icon;
       newBookmark.domain = metaData.provider;
