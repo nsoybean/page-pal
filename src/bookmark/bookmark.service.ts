@@ -38,7 +38,7 @@ import { Common } from 'src/library';
 import extractDomain from 'extract-domain';
 import { Metadata, parser } from 'html-metadata-parser';
 import { TagService } from 'src/tag/tag.service';
-import { IUpdateTag } from 'src/tag/interfaces/tag.interface';
+import { ITagDoc, IUpdateTag } from 'src/tag/interfaces/tag.interface';
 @Injectable()
 export class BookmarkService {
   private readonly logger = new Logger(BookmarkService.name);
@@ -400,26 +400,39 @@ export class BookmarkService {
       tags,
     );
 
-    // filter tags exclude existing tags
-    const tagsToCreate = tags.filter(
-      (tag) =>
-        !existingTagsObjList.some((existingTag) => existingTag.name === tag),
-    );
-
-    // create new tags
-    const newTags = await this.tagService.create(tagsToCreate);
+    // if no existing tags, all new
+    let newTags: ITagDoc[] = [];
+    if (!existingTagsObjList || existingTagsObjList?.length === 0) {
+      newTags = await this.tagService.create(tags);
+    } else {
+      // filter to exclude existing tags
+      const tagsToCreate = tags.filter(
+        (tag) =>
+          !existingTagsObjList.some((existingTag) => existingTag.name === tag),
+      );
+      newTags = await this.tagService.create(tagsToCreate);
+    }
 
     // merge two tags array
-    const allTags = [...existingTagsObjList, ...newTags];
-    if (allTags.length !== tags.length) {
+    const existingAndNewTags = [...existingTagsObjList, ...newTags];
+    this.logger.debug(
+      `[addTags] Existing tag: ${existingTagsObjList.length}, combinedTags: ${existingAndNewTags.length}, input tags: ${tags.length}`,
+    );
+
+    if (existingAndNewTags.length !== tags.length) {
+      this.logger.debug(
+        `[addTags] Error in creating tags. Existing tag: ${existingTagsObjList.length}, existingAndNewTags: ${existingAndNewTags.length}, input tags: ${tags.length}`,
+      );
       throw new InternalServerErrorException('Error in creating tags');
     }
 
     // reorder as request input
-    const orderedTags = tags.map((tag) => allTags.find((t) => t.name === tag));
+    const orderedTags = tags.map((tag) =>
+      existingAndNewTags.find((t) => t.name === tag),
+    );
 
     // embed tags ids into bookmark
-    const embedTagRes = await this.bookmarkModel.updateOne(
+    await this.bookmarkModel.updateOne(
       { _id: bookmark._id },
       { $set: { tags: orderedTags.map((tag) => tag.id) } }, // update tags field
       { timestamps: false }, // do not update timestamp so as to not re-order client side render
