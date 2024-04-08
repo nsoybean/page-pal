@@ -18,3 +18,8 @@ export interface IUpdateTag {
   id?: string;
   name: string;
 }
+
+export interface IListTags {
+  total_records: number;
+  data: ITagDoc[];
+}

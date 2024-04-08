@@ -230,15 +230,13 @@ export class BookmarkService {
     // compute skip and limit
     const skipLimitParam = Common.calculateSkipAndLimit(page, limit);
 
-    const docCount = await this.bookmarkModel.countDocuments({
-      userId: ctxUserId,
-      state: state,
-    });
-
     const criteria = {
       userId: ctxUserId,
       state: state,
     };
+
+    const docCount = await this.bookmarkModel.countDocuments(criteria);
+
     const bookmarks = await this.bookmarkModel
       .find(criteria)
       .select({ note: 0 })

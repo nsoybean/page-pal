@@ -1,12 +1,15 @@
 import {
   ClassSerializerInterceptor,
   Controller,
+  Get,
   Post,
+  Query,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { TagService } from './tag.service';
+import { ListTagResponseDto } from './dto/get-tag.dto';
 
 @Controller('tag')
 @UseGuards(AuthGuard('jwt'))
@@ -17,6 +20,16 @@ export class TagController {
   @Post()
   async create() {
     throw new Error('Not implemented');
+  }
+
+  @Get()
+  async findAll(
+    @Query('page') page?: string, // optional
+    @Query('limit') limit?: string, // optional
+  ) {
+    // TODO @sb: add validation to query param
+    const listData = await this.TagService.findAll(page, limit);
+    return ListTagResponseDto.convertToDto(listData);
   }
 
   async getAllUserTags() {

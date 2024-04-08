@@ -1,11 +1,12 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ClsService } from 'nestjs-cls';
-import { ITagDoc } from './interfaces/tag.interface';
+import { IListTags, ITagDoc } from './interfaces/tag.interface';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Tag } from './schemas/tag.schema';
 import { UserService } from 'src/user/user.service';
 import { v4 as uuidv4 } from 'uuid';
+import { Common } from 'src/library';
 
 @Injectable()
 export class TagService {
@@ -18,6 +19,34 @@ export class TagService {
     @Inject(UserService)
     private readonly userService: UserService,
   ) {}
+
+  async findAll(page: string, limit: string): Promise<IListTags> {
+    const ctx = this.cls.get('ctx');
+    const ctxUserId = ctx.user.id;
+
+    // compute skip and limit
+    const skipLimitParam = Common.calculateSkipAndLimit(page, limit);
+
+    const criteria = {
+      userId: ctxUserId,
+    };
+
+    const docCount = await this.tagModel.countDocuments(criteria);
+
+    const tags = await this.tagModel
+      .find(criteria)
+      .skip(skipLimitParam.skip)
+      .limit(skipLimitParam.limit)
+      .sort({ updatedAt: 'desc' })
+      .lean();
+
+    const result = {
+      total_records: docCount,
+      data: tags,
+    };
+
+    return result;
+  }
 
   /**
    * get matched tags and their ids
