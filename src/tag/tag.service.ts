@@ -86,4 +86,16 @@ export class TagService {
 
     return res;
   }
+
+  async findTagIdByName(name: string): Promise<ITagDoc> {
+    const ctx = this.cls.get('ctx');
+    const ctxUserId = ctx.user.id;
+
+    const tag = await this.tagModel.findOne({
+      userId: ctxUserId,
+      name: name,
+    });
+
+    return tag;
+  }
 }

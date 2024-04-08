@@ -59,12 +59,14 @@ export class BookmarkController {
   async findAll(
     @Query('page') page?: string, // optional
     @Query('limit') limit?: string, // optional
+    @Query('tag') tag?: string, // optional
   ) {
     // TODO @sb: add validation to query param
     const listData = await this.bookmarkService.findAllWithState(
       page,
       limit,
       BookmarkStateEnum.AVAILABLE,
+      tag,
     );
     return ListBookmarkResponseDto.convertToDto(listData);
   }
