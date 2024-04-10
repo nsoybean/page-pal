@@ -1,6 +1,6 @@
 import { Exclude, Expose, Type, plainToInstance } from 'class-transformer';
 
-import { ITagDoc, IListTags } from '../../Tag/interfaces/tag.interface';
+import { ITagDoc, IListTags } from '../interfaces/tag.interface';
 
 /**
  * Dto to perform class validation: https://docs.nestjs.com/pipes#class-validator
