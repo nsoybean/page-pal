@@ -402,6 +402,7 @@ export class BookmarkService {
    */
   async addTags(id: string, tags: string[]): Promise<boolean> {
     const bookmark = await this.findOneFullData(id);
+    console.log('🚀 ~ BookmarkService ~ addTags ~ bookmark:', bookmark);
 
     // forward to tagService, to find and return matched tags
     const existingTagsObjList = await this.tagService.findIdsOfExistingTags(
@@ -445,6 +446,9 @@ export class BookmarkService {
       { $set: { tags: orderedTags.map((tag) => tag.id) } }, // update tags field
       { timestamps: false }, // do not update timestamp so as to not re-order client side render
     );
+
+    // find tag removed from bookmark
+    // const untagged = bookmark.tags;
 
     return true;
   }
