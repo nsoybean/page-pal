@@ -302,7 +302,8 @@ export class BookmarkService {
           { state: BookmarkStateEnum.ARCHIVED },
         ],
       })
-      .populate('tagIds', { id: 1, name: 1, _id: 0 });
+      .populate('tagIds', { id: 1, name: 1, _id: 0 })
+      .lean();
 
     if (!bookmark) {
       throw new NotFoundException();
@@ -402,7 +403,6 @@ export class BookmarkService {
    */
   async addTags(id: string, tags: string[]): Promise<boolean> {
     const bookmark = await this.findOneFullData(id);
-    console.log('🚀 ~ BookmarkService ~ addTags ~ bookmark:', bookmark);
 
     // forward to tagService, to find and return matched tags
     const existingTagsObjList = await this.tagService.findIdsOfExistingTags(
@@ -425,12 +425,12 @@ export class BookmarkService {
     // merge two tags array
     const existingAndNewTags = [...existingTagsObjList, ...newTags];
     this.logger.debug(
-      `[addTags] Existing tag: ${existingTagsObjList.length}, combinedTags: ${existingAndNewTags.length}, input tags: ${tags.length}`,
+      `[addTags] Existing tag: ${existingTagsObjList.length}, combinedTags: ${existingAndNewTags.length}, input tags: ${tags.length}. BkmkId: ${id}.`,
     );
 
     if (existingAndNewTags.length !== tags.length) {
       this.logger.debug(
-        `[addTags] Error in creating tags. Existing tag: ${existingTagsObjList.length}, existingAndNewTags: ${existingAndNewTags.length}, input tags: ${tags.length}`,
+        `[addTags] Error in creating tags. Existing tag: ${existingTagsObjList.length}, existingAndNewTags: ${existingAndNewTags.length}, input tags: ${tags.length}. BkmkId: ${id}.`,
       );
       throw new InternalServerErrorException('Error in creating tags');
     }
@@ -448,7 +448,22 @@ export class BookmarkService {
     );
 
     // find tag removed from bookmark
-    // const untagged = bookmark.tags;
+    const currTags = bookmark.tagIds;
+    const untaggedTags = currTags.filter(
+      (currTag) => !tags.includes(currTag.name),
+    );
+
+    if (currTags.length >= 0) {
+      // get their ids
+      const untaggedTagIds = untaggedTags.map((tag) => tag.id);
+      // check if each tag is referenced, delete if not
+      for (const tagId of untaggedTagIds) {
+        const isReferenced = await this.isTagReferenced(tagId);
+        if (!isReferenced) {
+          await this.tagService.delete(tagId);
+        }
+      }
+    }
 
     return true;
   }
@@ -534,5 +549,23 @@ export class BookmarkService {
       );
       return '';
     }
+  }
+
+  async isTagReferenced(tagId: string): Promise<boolean> {
+    const ctx = this.cls.get('ctx');
+    const ctxUserId = ctx.user.id;
+
+    const res = await this.bookmarkModel.findOne({
+      id: tagId,
+      userId: ctxUserId,
+      $or: [
+        { state: BookmarkStateEnum.AVAILABLE },
+        { state: BookmarkStateEnum.ARCHIVED },
+      ],
+      tags: { $in: [tagId] },
+    });
+
+    // true if referenced, false otherwise
+    return !!res;
   }
 }
