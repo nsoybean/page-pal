@@ -98,4 +98,16 @@ export class TagService {
 
     return tag;
   }
+
+  async delete(id: string): Promise<boolean> {
+    const ctx = this.cls.get('ctx');
+    const ctxUserId = ctx.user.id;
+
+    const tag = await this.tagModel.deleteOne({
+      userId: ctxUserId,
+      id: id,
+    });
+
+    return tag ? true : false;
+  }
 }

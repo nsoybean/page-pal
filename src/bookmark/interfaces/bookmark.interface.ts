@@ -27,6 +27,7 @@ export interface IBookmarkDoc extends Document {
   description?: string;
   icon?: string;
   tags?: string[];
+  tagIds?: { id: string; name: string }[];
 }
 
 export interface IBookmarkMeta {
