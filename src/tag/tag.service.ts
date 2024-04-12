@@ -110,4 +110,15 @@ export class TagService {
 
     return tag ? true : false;
   }
+
+  async countUserTags(): Promise<number> {
+    const ctx = this.cls.get('ctx');
+    const ctxUserId = ctx.user.id;
+
+    const count = await this.tagModel.countDocuments({
+      userId: ctxUserId,
+    });
+
+    return count || null;
+  }
 }

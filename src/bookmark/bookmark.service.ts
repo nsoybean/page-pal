@@ -409,18 +409,31 @@ export class BookmarkService {
       tags,
     );
 
-    // if no existing tags, all new
-    let newTags: ITagDoc[] = [];
+    let tagsToCreate: string[] = [];
     if (!existingTagsObjList || existingTagsObjList?.length === 0) {
-      newTags = await this.tagService.create(tags);
+      // if no existing tags, all new
+      tagsToCreate = tags;
     } else {
       // filter to exclude existing tags
-      const tagsToCreate = tags.filter(
+      tagsToCreate = tags.filter(
         (tag) =>
           !existingTagsObjList.some((existingTag) => existingTag.name === tag),
       );
-      newTags = await this.tagService.create(tagsToCreate);
     }
+
+    // check user's current tags count
+    const FREE_TIER_TAG_COUNT_LIMIT = 50;
+    const userTagsCount = await this.tagService.countUserTags();
+    if (
+      userTagsCount &&
+      userTagsCount + tagsToCreate.length > FREE_TIER_TAG_COUNT_LIMIT
+    ) {
+      throw new BadRequestException(
+        `Free tier limit reached. Max tags allowed: ${FREE_TIER_TAG_COUNT_LIMIT}`,
+      );
+    }
+
+    const newTags: ITagDoc[] = await this.tagService.create(tagsToCreate);
 
     // merge two tags array
     const existingAndNewTags = [...existingTagsObjList, ...newTags];
