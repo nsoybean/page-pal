@@ -114,12 +114,13 @@ export class BookmarkController {
     return GetBookmarkResponseDto.convertToDto(bookmark);
   }
 
-  @Patch(':id')
-  update(
+  @Patch(':id/metadata')
+  async update(
     @Param('id') id: string,
     @Body() updateBookmarkDto: UpdateBookmarkDto,
   ) {
-    return this.bookmarkService.update(id, updateBookmarkDto);
+    const updatedId = await this.bookmarkService.update(id, updateBookmarkDto);
+    return { id: updatedId };
   }
 
   @Delete(':id')
@@ -138,6 +139,6 @@ export class BookmarkController {
 
     await this.bookmarkService.addTags(id, body.tags);
 
-    return id;
+    return { id };
   }
 }

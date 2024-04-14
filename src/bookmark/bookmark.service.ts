@@ -252,7 +252,7 @@ export class BookmarkService {
       .select({ note: 0 })
       .skip(skipLimitParam.skip)
       .limit(skipLimitParam.limit)
-      .sort({ updatedAt: 'desc' })
+      .sort({ createdAt: 'desc' })
       .populate('tagIds', { id: 1, name: 1, _id: 0 })
       .lean();
 
@@ -312,8 +312,23 @@ export class BookmarkService {
     return bookmark;
   }
 
-  update(id: string, updateBookmarkDto: UpdateBookmarkDto) {
-    throw new NotImplementedException();
+  async update(
+    id: string,
+    updateBookmarkDto: UpdateBookmarkDto,
+  ): Promise<string> {
+    const ctx = this.cls.get('ctx');
+    const ctxUserId = ctx.user.id;
+
+    const updated = await this.bookmarkModel.findOneAndUpdate(
+      { id: id, userId: ctxUserId },
+      { title: updateBookmarkDto.title },
+    );
+
+    if (updated) {
+      return updated.id;
+    }
+
+    throw new NotFoundException();
   }
 
   // TODO @sb: consider moving this y doc into another collection should this impact performance
