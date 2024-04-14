@@ -11,7 +11,7 @@ export class Tag {
   @Prop({ required: true, index: true })
   userId: string;
 
-  @Prop({ required: true })
+  @Prop({ required: true, index: true })
   name: string;
 }
 

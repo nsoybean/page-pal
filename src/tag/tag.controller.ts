@@ -1,4 +1,5 @@
 import {
+  Body,
   ClassSerializerInterceptor,
   Controller,
   Get,
@@ -30,6 +31,12 @@ export class TagController {
     // TODO @sb: add validation to query param
     const listData = await this.TagService.findAll(page, limit);
     return ListTagResponseDto.convertToDto(listData);
+  }
+
+  @Get('/autocomplete')
+  async autocomplete(@Query('text') text?: string) {
+    const tagList = await this.TagService.autocomplete(text);
+    return tagList;
   }
 
   async getAllUserTags() {

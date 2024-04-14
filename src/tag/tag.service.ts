@@ -121,4 +121,36 @@ export class TagService {
 
     return count || null;
   }
+
+  async autocomplete(text: string): Promise<string[]> {
+    const ctx = this.cls.get('ctx');
+    const ctxUserId = ctx.user.id;
+
+    let result = await this.tagModel.aggregate([
+      {
+        $search: {
+          index: 'tag-autocomplete',
+          autocomplete: {
+            query: `${text.trim()}`,
+            path: 'name',
+            fuzzy: {
+              maxEdits: 2,
+              prefixLength: 3,
+            },
+          },
+        },
+      },
+      {
+        $match: {
+          userId: ctxUserId, // Assuming ctxUserId is the user ID you want to filter by
+        },
+      },
+      { $limit: 4 },
+      { $project: { _id: 0, name: 1 } },
+    ]);
+
+    if (result) {
+      return result;
+    } else return [];
+  }
 }
