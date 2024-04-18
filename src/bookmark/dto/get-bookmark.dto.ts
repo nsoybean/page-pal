@@ -63,7 +63,7 @@ export class GetBookmarkResponseDto {
   @Exclude()
   icon: string;
 
-  @Exclude()
+  @Expose()
   createdAt: Date;
 
   @Expose()
