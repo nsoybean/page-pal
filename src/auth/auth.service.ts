@@ -36,7 +36,6 @@ export class AuthService {
       throw findUserErr;
     }
 
-    console.log('🚀 ~ AuthService ~ googleLogin ~ userDetails:', userDetails);
     // if user found, sign user details and return token
     if (userDetails) {
       const payload = {
