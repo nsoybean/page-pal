@@ -42,3 +42,10 @@ export interface IListBookmarks {
   total_records: number;
   data: IBookmarkDoc[];
 }
+
+export interface ISearchArticle {
+  id: string;
+  title: string;
+  link: string;
+  description: string;
+}

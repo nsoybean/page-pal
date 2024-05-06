@@ -32,6 +32,7 @@ import {
   IListBookmarks,
   IBookmarkMeta,
   BookmarkStateEnum,
+  ISearchArticle,
 } from './interfaces/bookmark.interface';
 import { Bookmark } from './schemas/bookmark.schema';
 import { Common } from 'src/library';
@@ -147,6 +148,9 @@ export class BookmarkService {
     );
 
     if (getMetaDataErr) {
+      this.logger.debug(
+        `[metadata-scraper] Invalid url: ${link}, error: ${getMetaDataErr.message}`,
+      );
       throw new UnprocessableEntityException();
     }
 
@@ -595,5 +599,46 @@ export class BookmarkService {
 
     // true if referenced, false otherwise
     return !!res;
+  }
+
+  async searchTerm(term: string): Promise<ISearchArticle[]> {
+    const ctx = this.cls.get('ctx');
+    const ctxUserId = ctx.user.id;
+
+    let result = await this.bookmarkModel.aggregate([
+      {
+        $search: {
+          index: 'bookmark-search',
+          compound: {
+            should: [
+              {
+                autocomplete: {
+                  query: `${term.trim()}`,
+                  path: 'title',
+                },
+              },
+              {
+                autocomplete: {
+                  query: `${term.trim()}`,
+                  path: 'description',
+                },
+              },
+            ],
+            minimumShouldMatch: 1,
+          },
+        },
+      },
+      {
+        $match: {
+          userId: ctxUserId, // Assuming ctxUserId is the user ID you want to filter by
+        },
+      },
+      { $limit: 8 },
+      { $project: { _id: 0, id: 1, title: 1, link: 1, description: 1 } },
+    ]);
+
+    if (result) {
+      return result;
+    } else return [];
   }
 }
