@@ -1,4 +1,4 @@
-import { Document } from 'mongoose';
+import { Document, StringExpressionOperatorReturningArray } from 'mongoose';
 
 /**
  * As the developer are responsible for ensuring that your document interface lines up with your Mongoose schema.
@@ -41,4 +41,11 @@ export interface IBookmarkMeta {
 export interface IListBookmarks {
   total_records: number;
   data: IBookmarkDoc[];
+}
+
+export interface ISearchArticle {
+  id: string;
+  title: string;
+  link: string;
+  description: string;
 }

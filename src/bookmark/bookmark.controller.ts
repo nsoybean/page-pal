@@ -25,7 +25,10 @@ import {
   UpdateBookmarkNoteDto,
   GetBookmarkByIdResponseDto,
 } from './dto/index';
-import { BookmarkStateEnum } from './interfaces/bookmark.interface';
+import {
+  BookmarkStateEnum,
+  ISearchArticle,
+} from './interfaces/bookmark.interface';
 
 @Controller('bookmark')
 @UseGuards(AuthGuard('jwt'))
@@ -50,7 +53,7 @@ export class BookmarkController {
   @Post('/v3')
   async createV3(@Body() createBookmarkDto: CreateBookmarkDto) {
     const newBookmark = await this.bookmarkService.createV3(
-      createBookmarkDto.link,
+      createBookmarkDto.link.trim(),
     );
     return CreateBookmarkResponseDto.convertToDto(newBookmark);
   }
@@ -83,10 +86,19 @@ export class BookmarkController {
     return ListBookmarkResponseDto.convertToDto(listData);
   }
 
-  @Get(':id')
-  async findOne(@Param('id') id: string) {
-    const bookmark = await this.bookmarkService.findOne(id);
-    return GetBookmarkByIdResponseDto.convertToDto(bookmark);
+  // @Get(':id')
+  // async findOne(@Param('id') id: string) {
+  //   const bookmark = await this.bookmarkService.findOne(id);
+  //   return GetBookmarkByIdResponseDto.convertToDto(bookmark);
+  // }
+
+  @Get('search')
+  async search(@Query('query') query: string): Promise<ISearchArticle[] | []> {
+    if (!query) {
+      return [];
+    }
+    const tagList = await this.bookmarkService.searchTerm(query);
+    return tagList;
   }
 
   @Patch(':id/archive')
