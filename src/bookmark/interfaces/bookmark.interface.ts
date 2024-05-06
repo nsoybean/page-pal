@@ -1,4 +1,4 @@
-import { Document, StringExpressionOperatorReturningArray } from 'mongoose';
+import { Document } from 'mongoose';
 
 /**
  * As the developer are responsible for ensuring that your document interface lines up with your Mongoose schema.
