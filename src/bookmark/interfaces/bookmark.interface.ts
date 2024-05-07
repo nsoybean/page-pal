@@ -48,4 +48,5 @@ export interface ISearchArticle {
   title: string;
   link: string;
   description: string;
+  state: string;
 }
