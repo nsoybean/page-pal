@@ -615,12 +615,20 @@ export class BookmarkService {
                 autocomplete: {
                   query: `${term.trim()}`,
                   path: 'title',
+                  fuzzy: {
+                    maxEdits: 2,
+                    prefixLength: 2,
+                  },
                 },
               },
               {
                 autocomplete: {
                   query: `${term.trim()}`,
                   path: 'description',
+                  fuzzy: {
+                    maxEdits: 2,
+                    prefixLength: 2,
+                  },
                 },
               },
             ],
