@@ -631,10 +631,23 @@ export class BookmarkService {
       {
         $match: {
           userId: ctxUserId, // Assuming ctxUserId is the user ID you want to filter by
+          state: {
+            $ne: BookmarkStateEnum.DELETED,
+          },
         },
       },
+      { $sort: { createdAt: -1 } },
       { $limit: 8 },
-      { $project: { _id: 0, id: 1, title: 1, link: 1, description: 1 } },
+      {
+        $project: {
+          _id: 0,
+          id: 1,
+          title: 1,
+          link: 1,
+          description: 1,
+          state: 1,
+        },
+      },
     ]);
 
     if (result) {
