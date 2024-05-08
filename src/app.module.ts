@@ -6,8 +6,8 @@ import { AppService } from './app/app.service';
 import { AuthModule } from './auth/auth.module';
 import { BookmarkModule } from './bookmark/bookmark.module';
 import { UserModule } from './user/user.module';
-import { HocuspocusModule } from './hocuspocus/hocuspocus.module';
 import { TagModule } from './tag/tag.module';
+import { FolderModule } from './folder/folder.module';
 import 'dotenv/config';
 
 @Module({
@@ -15,7 +15,10 @@ import 'dotenv/config';
     MongooseModule.forRoot(process.env.MONGODB_URI, { dbName: 'page-pal' }),
     AuthModule, // handling authn and authz
     BookmarkModule, // bookmarks
-    UserModule, TagModule, // user management
+    UserModule,
+    TagModule,
+    FolderModule,
+    // user management
     // HocuspocusModule, // collab editing BE for tiptap
   ],
   controllers: [AppController], // handles HTTP requests
