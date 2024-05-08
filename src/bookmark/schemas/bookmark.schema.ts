@@ -7,10 +7,10 @@ import { Tag } from 'src/tag/schemas/tag.schema';
  */
 @Schema({ timestamps: true })
 export class Bookmark {
-  @Prop({ required: true, unique: true })
+  @Prop({ required: true, unique: true, index: true })
   id: string;
 
-  @Prop({ required: true })
+  @Prop({ required: true, index: true })
   userId: string;
 
   @Prop({ required: true })
@@ -47,7 +47,7 @@ export class Bookmark {
   // @Prop({ type: Date, default: Date.now })
   // updatedAt: Date;
 
-  @Prop({ default: BookmarkStateEnum.AVAILABLE })
+  @Prop({ default: BookmarkStateEnum.AVAILABLE, index: true })
   state: string;
 
   // remove note: 07/04/24
