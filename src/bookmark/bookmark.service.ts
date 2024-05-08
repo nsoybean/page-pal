@@ -654,6 +654,7 @@ export class BookmarkService {
           link: 1,
           description: 1,
           state: 1,
+          createdAt: 1,
         },
       },
     ]);
