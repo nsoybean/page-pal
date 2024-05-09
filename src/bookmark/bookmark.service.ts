@@ -631,6 +631,16 @@ export class BookmarkService {
                   },
                 },
               },
+              {
+                autocomplete: {
+                  query: `${term.trim()}`,
+                  path: 'link',
+                  fuzzy: {
+                    maxEdits: 2,
+                    prefixLength: 2,
+                  },
+                },
+              },
             ],
             minimumShouldMatch: 1,
           },
