@@ -5,8 +5,14 @@ import { BookmarkService } from 'src/bookmark/bookmark.service';
 import { ClsService } from 'nestjs-cls';
 import { Model } from 'mongoose';
 import { IFolderDoc } from './interfaces/folder.interface';
+import { BookmarkStateEnum } from 'src/bookmark/interfaces/bookmark.interface';
 
 @Injectable()
+/**
+ * Self referencing model:
+ * link: https://www.reddit.com/r/SQL/comments/rt3d9a/how_would_you_model_a_file_tree/
+ * link: https://dba.stackexchange.com/questions/3023/best-design-for-adding-a-folder-file-relationship
+ */
 export class FolderService {
   private readonly logger = new Logger(FolderService.name);
   constructor(
@@ -17,25 +23,40 @@ export class FolderService {
     private readonly bookmarkService: BookmarkService,
   ) {}
 
-  async getAllDataInsideFolder() {
-    console.log('hihihi');
-
-    const bookmarks = await this.FolderModel.find({
+  async getDataInsideFolder({
+    id = null,
+    page,
+    limit,
+  }: {
+    id: string;
+    page: string;
+    limit: string;
+  }) {
+    const foldersResult = await this.FolderModel.find({
       $or: [
-        { id: '8f567d7c-5785-4f62-b55a-75f586ee121' },
-        { parentFolderId: '8f567d7c-5785-4f62-b55a-75f586ee121' },
+        { id }, // curr folder
+        { parentFolderId: id }, // all nested folders
       ],
     })
-      // .skip(skipLimitParam.skip)
-      // .limit(skipLimitParam.limit)
       .sort({ createdAt: 'desc' })
-      .populate('bookmarkId', { id: 1, title: 1, _id: 0 })
-      .populate('parentFolderId', { id: 1, name: 1, _id: 0 })
       .lean();
 
     console.log(
-      '🚀 ~ FolderService ~ getAllDataInsideFolder ~ bookmarks:',
-      JSON.stringify(bookmarks),
+      '🚀 ~ FolderService ~ getAllDataInsideFolder ~ foldersResult:',
+      JSON.stringify(foldersResult, null, 4),
     );
+
+    const bookmarksListResult = await this.bookmarkService.findAllWithState(
+      page,
+      limit,
+      BookmarkStateEnum.AVAILABLE,
+    );
+
+    console.log(
+      '🚀 ~ FolderService ~ getAllDataInsideFolder ~ bookmarksListResult:',
+      JSON.stringify(bookmarksListResult, null, 4),
+    );
+
+    return { folders: { data: foldersResult }, bookmarks: bookmarksListResult };
   }
 }
