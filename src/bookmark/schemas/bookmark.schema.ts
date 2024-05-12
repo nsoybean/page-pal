@@ -54,8 +54,10 @@ export class Bookmark {
   // @Prop({ default: '' })
   // note: string;
 
-  @Prop({ default: '' })
   icon: string;
+
+  @Prop({ index: true })
+  parentFolderId: string;
 }
 
 // factory method to create schema

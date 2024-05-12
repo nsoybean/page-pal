@@ -16,13 +16,9 @@ export class Folder {
   @Prop({ required: true })
   name: string;
 
-  parentFolderId: Folder;
-
-  bookmarkId: Bookmark;
-
-  // TODO @sb: decide if we can tag a folder
-  // @Prop({ type: [String], ref: Tag.name })
-  // tags: Tag[];
+  // @Prop({ index: true, sparse: true }) // spares required as not all documents has parentFolderId field
+  // parentFolderId: Folder;
+  parentFolderId: [this];
 }
 
 // factory method to create schema
@@ -30,21 +26,21 @@ export class Folder {
 export const FolderSchema = SchemaFactory.createForClass(Folder);
 
 // folder with one or more files
-FolderSchema.virtual(
-  'bookmarkId', // use this 'name' to populate
-  {
-    ref: 'Bookmark', // The model to use
-    localField: 'bookmarkId', // The field in FolderSchema
-    foreignField: 'id', // The field on bookmark. This can be whatever you want.
-  },
-);
+// FolderSchema.virtual(
+//   'bookmarkId', // use this 'name' to populate
+//   {
+//     ref: 'Bookmark', // The model to use
+//     localField: 'bookmarkId', // The field in FolderSchema
+//     foreignField: 'id', // The field on bookmark. This can be whatever you want.
+//   },
+// );
 
 // folder can have parent folder
 FolderSchema.virtual(
-  'parentFolderId', // use this 'name' to populate
+  'parentFolder', // use this 'name' to populate
   {
     ref: 'Folder', // The model to use
     localField: 'parentFolderId', // The field in FolderSchema
-    foreignField: 'id', // The field on bookmark. This can be whatever you want.
+    foreignField: 'id', // The field on Folder. This can be whatever you want.
   },
 );

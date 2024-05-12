@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { FolderService } from './folder.service';
 import { AuthGuard } from '@nestjs/passport';
 
@@ -7,14 +7,27 @@ import { AuthGuard } from '@nestjs/passport';
 export class FolderController {
   constructor(private readonly folderService: FolderService) {}
 
-  @Get('/home')
+  @Post('/folder/:id')
   async getDataInsideFolder(
-    // @Param('id') folderId?: string,
+    @Param('id') folderId?: string,
     @Query('page') page?: string, // optional
     @Query('limit') limit?: string, // optional
   ) {
     const listData = await this.folderService.getDataInsideFolder({
-      id: null,
+      folderId,
+      page,
+      limit,
+    });
+    return listData;
+  }
+
+  @Get()
+  async getDataHome(
+    @Query('page') page?: string, // optional
+    @Query('limit') limit?: string, // optional
+  ) {
+    const listData = await this.folderService.getDataInsideFolder({
+      folderId: null,
       page,
       limit,
     });

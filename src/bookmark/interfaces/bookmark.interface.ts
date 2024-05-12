@@ -28,6 +28,7 @@ export interface IBookmarkDoc extends Document {
   icon?: string;
   tags?: string[];
   tagIds?: { id: string; name: string }[];
+  parentFolderId?: string;
 }
 
 export interface IBookmarkMeta {

@@ -24,39 +24,54 @@ export class FolderService {
   ) {}
 
   async getDataInsideFolder({
-    id = null,
+    folderId = null,
     page,
     limit,
   }: {
-    id: string;
+    folderId: string;
     page: string;
     limit: string;
   }) {
-    const foldersResult = await this.FolderModel.find({
-      $or: [
-        { id }, // curr folder
-        { parentFolderId: id }, // all nested folders
-      ],
-    })
-      .sort({ createdAt: 'desc' })
-      .lean();
+    console.log('🚀 ~ FolderService ~ folderId:', folderId);
+    let promisesAll = [];
 
-    console.log(
-      '🚀 ~ FolderService ~ getAllDataInsideFolder ~ foldersResult:',
-      JSON.stringify(foldersResult, null, 4),
+    // push articles query
+    // note: if folderId is null, will return all articles at base level
+    promisesAll.push(
+      this.bookmarkService.findAllWithState(
+        page,
+        limit,
+        BookmarkStateEnum.AVAILABLE,
+        folderId,
+      ),
     );
 
-    const bookmarksListResult = await this.bookmarkService.findAllWithState(
-      page,
-      limit,
-      BookmarkStateEnum.AVAILABLE,
+    // push folder query if any
+    promisesAll.push(
+      this.FolderModel.find({
+        $or: [
+          { id: folderId }, // curr folder
+          { parentFolderId: folderId }, // all nested folders
+        ],
+      })
+        .sort({ createdAt: 'desc' })
+        .lean(),
     );
 
-    console.log(
-      '🚀 ~ FolderService ~ getAllDataInsideFolder ~ bookmarksListResult:',
-      JSON.stringify(bookmarksListResult, null, 4),
-    );
+    try {
+      const results = await Promise.all(promisesAll);
+      console.log('🚀 ~ FolderService ~ results:', results);
 
-    return { folders: { data: foldersResult }, bookmarks: bookmarksListResult };
+      // return {
+      //   bookmarks: results[0],
+      //   folders: { data: results[1] },
+      // };
+      return {
+        bookmarks: [],
+        folders: { data: [] },
+      };
+    } catch (error) {
+      this.logger.error(error);
+    }
   }
 }

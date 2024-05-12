@@ -227,6 +227,7 @@ export class BookmarkService {
     page: string,
     limit: string,
     state: BookmarkStateEnum,
+    parentFolderId?: string,
     tag?: string,
   ): Promise<IListBookmarks> {
     const ctx = this.cls.get('ctx');
@@ -248,6 +249,11 @@ export class BookmarkService {
       }
       criteria['tags'] = { $in: [tagDoc.id] };
     }
+
+    if (parentFolderId) {
+      criteria['parentFolderId'] = parentFolderId;
+    }
+    console.log('🚀 ~ BookmarkService ~ criteria:', criteria);
 
     const docCount = await this.bookmarkModel.countDocuments(criteria);
 

@@ -12,5 +12,4 @@ export interface IFolderDoc extends Document {
   userId: string;
   name: string;
   parentFolderId: string;
-  bookmarkId: IBookmarkDoc;
 }
