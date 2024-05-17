@@ -17,6 +17,7 @@ env:
   MONGODB_URI: ${{ secrets.MONGODB_URI }}
   GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
   SERVICE_NAME: yetti
+  REGION: asia-southeast1
 
 jobs:
   dockerize-and-deploy:
@@ -46,5 +47,6 @@ jobs:
           gcloud run deploy $SERVICE_NAME \
             --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.DOCKER_IMAGE_NAME }}:latest \
             --platform managed \
-            --region asia-southeast1 \
+            --port 80 \
+            --region $REGION \
             --allow-unauthenticated
