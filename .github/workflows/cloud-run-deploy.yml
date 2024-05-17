@@ -47,6 +47,6 @@ jobs:
           gcloud run deploy $SERVICE_NAME \
             --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.DOCKER_IMAGE_NAME }}:latest \
             --platform managed \
-            --port 80 \
             --region $REGION \
             --allow-unauthenticated
+            --port=$PORT
