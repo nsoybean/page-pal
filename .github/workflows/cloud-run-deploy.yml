@@ -16,6 +16,7 @@ env:
   CLIENT_URL: https://yetti.vercel.app/saves
   MONGODB_URI: ${{ secrets.MONGODB_URI }}
   GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+  SERVICE_NAME: yetti
 
 jobs:
   dockerize-and-deploy:
