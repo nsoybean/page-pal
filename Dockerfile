@@ -25,11 +25,12 @@ COPY package*.json ./
 # Install dependencies.
 RUN npm ci
 
-# Copy local code to the container image.
-COPY . ./
 
 # Build the project.
 RUN npm run build
+
+# Copy local code to the container image.
+COPY . ./
 
 EXPOSE 3005
 
