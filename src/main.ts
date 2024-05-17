@@ -8,6 +8,7 @@ import 'dotenv/config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
   console.log(
     '🚀 test log GOOGLE_CALLBACK_URL:',
     process.env.GOOGLE_CALLBACK_URL,

@@ -26,15 +26,18 @@ COPY package*.json ./
 RUN npm ci
 
 
-# Build the project.
-RUN npm run build
+
 
 # Copy local code to the container image.
 COPY . ./
 
+# Build the project.
+RUN npm run build
+
 EXPOSE 3005
 
 CMD ["node", "dist/main.js"]
+# CMD ["npm", "run", "start:debug"]
 
 
 # # Pass secrets as build-time arguments
