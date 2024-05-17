@@ -30,8 +30,7 @@ COPY . ./
 
 EXPOSE 3005
 
-# CMD [ "node", "dist/main.js" ]
-CMD [ "npm", "run", "start:prod" ]
+CMD ["node", "dist/main.js"]
 
 
 # # Pass secrets as build-time arguments
