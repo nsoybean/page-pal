@@ -11,7 +11,7 @@
 
 # Use the official lightweight Node.js image.
 # https://hub.docker.com/_/node
-FROM node:21-slim
+FROM node:18.15.0-alpine
 
 # Create and change to the app directory.
 WORKDIR /usr/src/app
