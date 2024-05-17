@@ -14,6 +14,7 @@
 FROM node:18.15.0-alpine
 
 # Create and change to the app directory.
+RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 
 # Copy application dependency manifests to the container image.
