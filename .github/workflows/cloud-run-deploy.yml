@@ -6,19 +6,19 @@ on:
       - main
 
 env:
-  JWT_SECRET_EXPIRY_SECONDS: 7890000
+  JWT_SECRET_EXPIRY_SECONDS: ${{ secrets.JWT_SECRET_EXPIRY_SECONDS }}
   GOOGLE_CALLBACK_URL: ${{ secrets.GOOGLE_CALLBACK_URL }}
   CLIENT_HOST: https://yetti.vercel.app
+  CLIENT_URL: https://yetti.vercel.app/saves
   JWT_SECRET: ${{ secrets.JWT_SECRET }}
   PORT: 3005
   NODE_ENV: production
   GOOGLE_SECRET: ${{ secrets.GOOGLE_SECRET }}
-  CLIENT_URL: https://yetti.vercel.app/saves
   MONGODB_URI: ${{ secrets.MONGODB_URI }}
+  MONGO_DATABASE: ${{ secrets.MONGO_DATABASE }}
   GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-
-  SERVICE_NAME: yetti
-  REGION: asia-southeast1
+  SERVICE_NAME: ${{ secrets.SERVICE_NAME }}
+  REGION: ${{ secrets.REGION }}
 
 jobs:
   dockerize-and-deploy:
@@ -39,6 +39,20 @@ jobs:
           gcloud auth configure-docker
 
       - name: Build and Push Docker Image
+        env:
+          JWT_SECRET_EXPIRY_SECONDS: ${{ secrets.JWT_SECRET_EXPIRY_SECONDS }}
+          GOOGLE_CALLBACK_URL: ${{ secrets.GOOGLE_CALLBACK_URL }}
+          CLIENT_HOST: https://yetti.vercel.app
+          CLIENT_URL: https://yetti.vercel.app/saves
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          PORT: $PORT
+          NODE_ENV: production
+          GOOGLE_SECRET: ${{ secrets.GOOGLE_SECRET }}
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          MONGO_DATABASE: ${{ secrets.MONGO_DATABASE }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          SERVICE_NAME: ${{ secrets.SERVICE_NAME }}
+          REGION: ${{ secrets.REGION }}
         run: |
           docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.DOCKER_IMAGE_NAME }}:latest .
           docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.DOCKER_IMAGE_NAME }}:latest
