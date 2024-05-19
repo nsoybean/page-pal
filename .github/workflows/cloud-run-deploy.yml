@@ -11,7 +11,6 @@ env:
   CLIENT_HOST: https://yetti.vercel.app
   CLIENT_URL: https://yetti.vercel.app/saves
   JWT_SECRET: ${{ secrets.JWT_SECRET }}
-  PORT: 3005
   NODE_ENV: production
   GOOGLE_SECRET: ${{ secrets.GOOGLE_SECRET }}
   MONGODB_URI: ${{ secrets.MONGODB_URI }}
@@ -51,7 +50,6 @@ jobs:
           region: ${{ secrets.REGION }}
           image: 'gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.DOCKER_IMAGE_NAME }}:latest'
           env_vars: |
-            PORT=${{ env.PORT }}
             JWT_SECRET_EXPIRY_SECONDS=${{ secrets.JWT_SECRET_EXPIRY_SECONDS }}
             GOOGLE_CALLBACK_URL=${{ secrets.GOOGLE_CALLBACK_URL }}
             CLIENT_HOST=${{ secrets.CLIENT_HOST }}
