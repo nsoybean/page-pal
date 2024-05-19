@@ -51,11 +51,11 @@ jobs:
           region: $REGION
           image: gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.DOCKER_IMAGE_NAME }}:latest
           env_vars: |
-            PORT=$PORT
+            PORT=${{ secrets.PORT }}
             JWT_SECRET_EXPIRY_SECONDS=${{ secrets.JWT_SECRET_EXPIRY_SECONDS }}
             GOOGLE_CALLBACK_URL=${{ secrets.GOOGLE_CALLBACK_URL }}
-            CLIENT_HOST=https://yetti.vercel.app
-            CLIENT_URL=https://yetti.vercel.app/saves
+            CLIENT_HOST=${{ secrets.CLIENT_HOST }}
+            CLIENT_URL=${{ secrets.CLIENT_URL }}
             JWT_SECRET=${{ secrets.JWT_SECRET }}
             NODE_ENV=production
             GOOGLE_SECRET=${{ secrets.GOOGLE_SECRET }}
@@ -63,7 +63,7 @@ jobs:
             MONGO_DATABASE=${{ secrets.MONGO_DATABASE }}
             GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
             SERVICE_NAME=${{ secrets.SERVICE_NAME }}
-            REGION=${{ secrets.REGION
+            REGION=${{ secrets.REGION }}
 
       # If required, use the Cloud Run url output in later steps
       - name: Show Output
