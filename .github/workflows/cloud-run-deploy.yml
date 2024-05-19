@@ -48,14 +48,14 @@ jobs:
         uses: google-github-actions/deploy-cloudrun@v2
         with:
           service: 'yetti'
-          region: $REGION
+          region: ${{ secrets.REGION }}
           image: 'gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.DOCKER_IMAGE_NAME }}:latest'
           env_vars: |
             PORT=${{ env.PORT }}
             JWT_SECRET_EXPIRY_SECONDS=${{ secrets.JWT_SECRET_EXPIRY_SECONDS }}
             GOOGLE_CALLBACK_URL=${{ secrets.GOOGLE_CALLBACK_URL }}
-            CLIENT_HOST=${{ env.CLIENT_HOST }}
-            CLIENT_URL=${{ env.CLIENT_URL }}
+            CLIENT_HOST=${{ secrets.CLIENT_HOST }}
+            CLIENT_URL=${{ secrets.CLIENT_URL }}
             JWT_SECRET=${{ secrets.JWT_SECRET }}
             NODE_ENV=production
             GOOGLE_SECRET=${{ secrets.GOOGLE_SECRET }}
