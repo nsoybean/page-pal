@@ -45,7 +45,7 @@ jobs:
 
       - name: Deploy to Cloud Run
         id: deploy
-        uses: google-github-actions/deploy-cloudrun@v0
+        uses: google-github-actions/deploy-cloudrun@v1
         with:
           service: $SERVICE_NAME
           region: $REGION
@@ -54,8 +54,8 @@ jobs:
             PORT=${{ env.PORT }}
             JWT_SECRET_EXPIRY_SECONDS=${{ secrets.JWT_SECRET_EXPIRY_SECONDS }}
             GOOGLE_CALLBACK_URL=${{ secrets.GOOGLE_CALLBACK_URL }}
-            CLIENT_HOST=${{ secrets.CLIENT_HOST }}
-            CLIENT_URL=${{ secrets.CLIENT_URL }}
+            CLIENT_HOST=${{ env.CLIENT_HOST }}
+            CLIENT_URL=${{ env.CLIENT_URL }}
             JWT_SECRET=${{ secrets.JWT_SECRET }}
             NODE_ENV=production
             GOOGLE_SECRET=${{ secrets.GOOGLE_SECRET }}
