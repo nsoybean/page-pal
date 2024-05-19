@@ -14,7 +14,6 @@
 FROM node:18.15.0-alpine
 
 # Create and change to the app directory.
-RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 
 # Copy application dependency manifests to the container image.
@@ -22,8 +21,12 @@ WORKDIR /usr/src/app
 # Copying this separately prevents re-running npm install on every code change.
 COPY package*.json ./
 
-# Install dependencies.
-RUN npm ci
+# Install nestjs which is required for bulding the Nest.js project.
+# (Skip for Node.js Projects)
+RUN npm install -g @nestjs/cli
+
+# Installs only the dependencies and skips devDependencies.
+RUN npm install --omit=dev
 
 
 # # Pass secrets as build-time arguments
@@ -53,7 +56,8 @@ ENV CLIENT_HOST=$CLIENT_HOST
 # Copy local code to the container image.
 COPY . ./
 
-# Build the project.
+# Create a "dist" folder with the production build.
+#(Skip for Node.js Projects)
 RUN npm run build
 
 EXPOSE 3005

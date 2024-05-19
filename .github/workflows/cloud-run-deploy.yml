@@ -44,23 +44,27 @@ jobs:
           docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.DOCKER_IMAGE_NAME }}:latest
 
       - name: Deploy to Cloud Run
-        run: |
-          gcloud run deploy $SERVICE_NAME \
-            --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.DOCKER_IMAGE_NAME }}:latest \
-            --platform managed \
-            --region $REGION \
-            --allow-unauthenticated
-            --port=$PORT
-            --set-env-vars JWT_SECRET_EXPIRY_SECONDS: ${{ secrets.JWT_SECRET_EXPIRY_SECONDS }} \
-            --set-env-vars GOOGLE_CALLBACK_URL: ${{ secrets.GOOGLE_CALLBACK_URL }} \
-            --set-env-vars CLIENT_HOST: https://yetti.vercel.app \
-            --set-env-vars CLIENT_URL: https://yetti.vercel.app/saves \
-            --set-env-vars JWT_SECRET: ${{ secrets.JWT_SECRET }} \
-            --set-env-vars PORT: $PORT \
-            --set-env-vars NODE_ENV: production \
-            --set-env-vars GOOGLE_SECRET: ${{ secrets.GOOGLE_SECRET }} \
-            --set-env-vars MONGODB_URI: ${{ secrets.MONGODB_URI }} \
-            --set-env-vars MONGO_DATABASE: ${{ secrets.MONGO_DATABASE }} \
-            --set-env-vars GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }} \
-            --set-env-vars SERVICE_NAME: ${{ secrets.SERVICE_NAME }} \
-            --set-env-vars REGION: ${{ secrets.REGION }}
+        id: deploy
+        uses: google-github-actions/deploy-cloudrun@v0
+        with:
+          service: $SERVICE_NAME
+          region: $REGION
+          image: gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.DOCKER_IMAGE_NAME }}:latest
+          env_vars: |
+            PORT=$PORT
+            JWT_SECRET_EXPIRY_SECONDS=${{ secrets.JWT_SECRET_EXPIRY_SECONDS }}
+            GOOGLE_CALLBACK_URL=${{ secrets.GOOGLE_CALLBACK_URL }}
+            CLIENT_HOST=https://yetti.vercel.app
+            CLIENT_URL=https://yetti.vercel.app/saves
+            JWT_SECRET=${{ secrets.JWT_SECRET }}
+            NODE_ENV=production
+            GOOGLE_SECRET=${{ secrets.GOOGLE_SECRET }}
+            MONGODB_URI=${{ secrets.MONGODB_URI }}
+            MONGO_DATABASE=${{ secrets.MONGO_DATABASE }}
+            GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+            SERVICE_NAME=${{ secrets.SERVICE_NAME }}
+            REGION=${{ secrets.REGION
+
+      # If required, use the Cloud Run url output in later steps
+      - name: Show Output
+        run: echo ${{ steps.deploy.outputs.url }}
