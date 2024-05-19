@@ -51,7 +51,7 @@ jobs:
           region: $REGION
           image: gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.DOCKER_IMAGE_NAME }}:latest
           env_vars: |
-            PORT=${{ secrets.PORT }}
+            PORT=${{ env.PORT }}
             JWT_SECRET_EXPIRY_SECONDS=${{ secrets.JWT_SECRET_EXPIRY_SECONDS }}
             GOOGLE_CALLBACK_URL=${{ secrets.GOOGLE_CALLBACK_URL }}
             CLIENT_HOST=${{ secrets.CLIENT_HOST }}
