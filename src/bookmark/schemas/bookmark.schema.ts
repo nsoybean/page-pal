@@ -1,17 +1,21 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { BookmarkStateEnum } from '../interfaces/bookmark.interface';
 import { Tag } from 'src/tag/schemas/tag.schema';
+import mongoose from 'mongoose';
+import { User } from 'src/user/schemas/user.schema';
 /**
  * The @Schema() decorator marks a class as a schema definition. It maps our 'Save' class to a MongoDB collection of the same name,
  * but with an additional “s” at the end - so the final mongo collection name will be 'saves'.
  */
 @Schema({ timestamps: true })
 export class Bookmark {
-  @Prop({ required: true, unique: true, index: true })
-  id: string;
-
-  @Prop({ required: true, index: true })
-  userId: string;
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: User.name,
+    required: true,
+    index: true,
+  })
+  userId: User;
 
   @Prop({ required: true })
   title: string;
@@ -31,28 +35,11 @@ export class Bookmark {
   @Prop({ default: '' })
   description: string;
 
-  // remove color: 07/04/24
-  // @Prop()
-  // color: string;
-
-  @Prop({ type: [String], ref: Tag.name })
+  @Prop({ type: [mongoose.Schema.Types.ObjectId], ref: Tag.name, index: true })
   tags: Tag[];
-
-  // added to schema decorator above
-  // note: do not use 'Date.now()' as this assigns a default val to the model
-  // and cause all documents to have same timestamp
-  // @Prop({ type: Date, default: Date.now })
-  // createdAt: Date;
-
-  // @Prop({ type: Date, default: Date.now })
-  // updatedAt: Date;
 
   @Prop({ default: BookmarkStateEnum.AVAILABLE, index: true })
   state: string;
-
-  // remove note: 07/04/24
-  // @Prop({ default: '' })
-  // note: string;
 
   @Prop({ default: '' })
   icon: string;
@@ -61,13 +48,3 @@ export class Bookmark {
 // factory method to create schema
 // to be init in module
 export const BookmarkSchema = SchemaFactory.createForClass(Bookmark);
-
-// bookmark tagged with zero or more tags
-BookmarkSchema.virtual(
-  'tagIds', // use this 'name' to populate
-  {
-    ref: 'Tag', // The model to use
-    localField: 'tags', // The field in BookmarkSchema
-    foreignField: 'id', // The field on tag. This can be whatever you want.
-  },
-);

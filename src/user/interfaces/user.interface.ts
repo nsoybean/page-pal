@@ -1,4 +1,4 @@
-import { Document } from 'mongoose';
+import mongoose, { Document } from 'mongoose';
 
 /**
  * As the developer are responsible for ensuring that your document interface lines up with your Mongoose schema.
@@ -6,7 +6,7 @@ import { Document } from 'mongoose';
  * Link: https://mongoosejs.com/docs/typescript.html
  */
 export interface IUser extends Document {
-  readonly id: string;
+  readonly _id: mongoose.ObjectId;
   email: string;
   firstName: string;
   lastName: string;
