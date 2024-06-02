@@ -1,4 +1,6 @@
-import { Document } from 'mongoose';
+import mongoose, { Document, Mongoose } from 'mongoose';
+import { ITagDoc } from 'src/tag/interfaces/tag.interface';
+import { IUser } from 'src/user/interfaces/user.interface';
 
 /**
  * As the developer are responsible for ensuring that your document interface lines up with your Mongoose schema.
@@ -12,8 +14,8 @@ export enum BookmarkStateEnum {
   DELETED = 'DELETED',
 }
 export interface IBookmarkDoc extends Document {
-  readonly id: string;
-  userId: string;
+  readonly _id: mongoose.ObjectId;
+  userId: IUser['_id'];
   title: string;
   image: string;
   link: string;
@@ -21,13 +23,11 @@ export interface IBookmarkDoc extends Document {
   type: string;
   color: string;
   state: BookmarkStateEnum;
-  readonly createdAt: Date; // init once
-  updatedAt: Date;
-  note?: string;
   description?: string;
   icon?: string;
-  tags?: string[];
-  tagIds?: { id: string; name: string }[];
+  tags?: ITagDoc[];
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
 }
 
 export interface IBookmarkMeta {

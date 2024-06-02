@@ -22,8 +22,6 @@ import {
   CreateBookmarkResponseDto,
   ListBookmarkResponseDto,
   UpdateBookmarkDto,
-  UpdateBookmarkNoteDto,
-  GetBookmarkByIdResponseDto,
 } from './dto/index';
 import {
   BookmarkStateEnum,
@@ -35,19 +33,21 @@ import {
 export class BookmarkController {
   constructor(private readonly bookmarkService: BookmarkService) {}
 
-  @UseInterceptors(ClassSerializerInterceptor)
-  @Post()
-  async create(@Body() createBookmarkDto: CreateBookmarkDto) {
-    const newBookmark = await this.bookmarkService.create(createBookmarkDto);
-    return CreateBookmarkResponseDto.convertToDto(newBookmark);
-  }
+  // deprecated
+  // @UseInterceptors(ClassSerializerInterceptor)
+  // @Post()
+  // async create(@Body() createBookmarkDto: CreateBookmarkDto) {
+  //   const newBookmark = await this.bookmarkService.create(createBookmarkDto);
+  //   return CreateBookmarkResponseDto.convertToDto(newBookmark);
+  // }
 
-  @UseInterceptors(ClassSerializerInterceptor)
-  @Post('/v2')
-  async createV2(@Body() createBookmarkDto: CreateBookmarkDto) {
-    const newBookmark = await this.bookmarkService.createV2(createBookmarkDto);
-    return CreateBookmarkResponseDto.convertToDto(newBookmark);
-  }
+  // deprecated
+  // @UseInterceptors(ClassSerializerInterceptor)
+  // @Post('/v2')
+  // async createV2(@Body() createBookmarkDto: CreateBookmarkDto) {
+  //   const newBookmark = await this.bookmarkService.createV2(createBookmarkDto);
+  //   return CreateBookmarkResponseDto.convertToDto(newBookmark);
+  // }
 
   @UseInterceptors(ClassSerializerInterceptor)
   @Post('/v3')
@@ -55,7 +55,7 @@ export class BookmarkController {
     const newBookmark = await this.bookmarkService.createV3(
       createBookmarkDto.link.trim(),
     );
-    return CreateBookmarkResponseDto.convertToDto(newBookmark);
+    return newBookmark._id;
   }
 
   @Get()
@@ -71,8 +71,9 @@ export class BookmarkController {
       BookmarkStateEnum.AVAILABLE,
       tag,
     );
-    return ListBookmarkResponseDto.convertToDto(listData);
+    return listData;
   }
+
   @Get('/archive')
   async findAllArchive(
     @Query('page') page?: string, // optional
@@ -83,7 +84,7 @@ export class BookmarkController {
       limit,
       BookmarkStateEnum.ARCHIVED,
     );
-    return ListBookmarkResponseDto.convertToDto(listData);
+    return listData;
   }
 
   // @Get(':id')
@@ -103,27 +104,14 @@ export class BookmarkController {
 
   @Patch(':id/archive')
   async archive(@Param('id') id: string) {
-    const bookmark = await this.bookmarkService.archive(id);
-    return GetBookmarkResponseDto.convertToDto(bookmark);
+    const bookmarkId = await this.bookmarkService.archive(id);
+    return bookmarkId;
   }
 
   @Patch(':id/unarchive')
   async unarchive(@Param('id') id: string) {
-    const bookmark = await this.bookmarkService.unarchive(id);
-    return GetBookmarkResponseDto.convertToDto(bookmark);
-  }
-
-  @UseInterceptors(ClassSerializerInterceptor)
-  @Patch(':id/note')
-  async updateNote(
-    @Param('id') id: string,
-    @Body() updateBookmarkNoteDto: UpdateBookmarkNoteDto,
-  ) {
-    const bookmark = await this.bookmarkService.updateNote(
-      id,
-      updateBookmarkNoteDto,
-    );
-    return GetBookmarkResponseDto.convertToDto(bookmark);
+    const bookmarkId = await this.bookmarkService.unarchive(id);
+    return bookmarkId;
   }
 
   @Patch(':id/metadata')
@@ -137,8 +125,8 @@ export class BookmarkController {
 
   @Delete(':id')
   async remove(@Param('id') id: string) {
-    const bookmark = await this.bookmarkService.remove(id);
-    return GetBookmarkResponseDto.convertToDto(bookmark);
+    const bookmarkId = await this.bookmarkService.remove(id);
+    return bookmarkId;
   }
 
   @Patch(':id/tags')

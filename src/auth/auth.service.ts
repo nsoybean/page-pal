@@ -39,7 +39,7 @@ export class AuthService {
     // if user found, sign user details and return token
     if (userDetails) {
       const payload = {
-        sub: userDetails.id,
+        sub: userDetails._id.toString(),
         email: userDetails.email,
       };
 
@@ -89,7 +89,7 @@ export class AuthService {
       const newUser = await this.userService.registerNewUser(userDetails);
 
       const payload = {
-        sub: newUser.id,
+        sub: newUser._id.toString(),
         email: newUser.email,
       };
 
