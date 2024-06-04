@@ -1,14 +1,18 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import mongoose from 'mongoose';
+import { User } from 'src/user/schemas/user.schema';
 /**
  * The @Schema() decorator marks a class as a schema definition. It maps our 'Tag' class to a MongoDB collection of the same name,
  * but with an additional “s” at the end - so the final mongo collection name will be 'Tags'.
  */
-@Schema({ timestamps: true, _id: false })
+@Schema({ timestamps: true })
 export class Tag {
-  @Prop({ required: true, unique: true, index: true })
-  id: string;
-
-  @Prop({ required: true, index: true })
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: User.name,
+    required: true,
+    index: true,
+  })
   userId: string;
 
   @Prop({ required: true, index: true })

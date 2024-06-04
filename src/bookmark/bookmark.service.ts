@@ -52,77 +52,79 @@ export class BookmarkService {
     private readonly tagService: TagService,
   ) {}
 
-  async create(createBookmarkDto: CreateBookmarkDto): Promise<IBookmarkDoc> {
-    const ctx = this.cls.get('ctx');
-    const ctxUserId = ctx.user.id;
+  // deprecated
+  // async create(createBookmarkDto: CreateBookmarkDto): Promise<IBookmarkDoc> {
+  //   const ctx = this.cls.get('ctx');
+  //   const ctxUserId = ctx.user._id;
 
-    // init doc
-    const newBookmark = new this.bookmarkModel(createBookmarkDto);
+  //   // init doc
+  //   const newBookmark = new this.bookmarkModel(createBookmarkDto);
 
-    try {
-      const title = await this.getTitleFromLink(createBookmarkDto.link);
-      const image = await this.getImageFromLink(createBookmarkDto.link);
-      const domain = extractDomain(createBookmarkDto.link) || '';
+  //   try {
+  //     const title = await this.getTitleFromLink(createBookmarkDto.link);
+  //     const image = await this.getImageFromLink(createBookmarkDto.link);
+  //     const domain = extractDomain(createBookmarkDto.link) || '';
 
-      newBookmark.title = title;
-      newBookmark.domain = domain;
-      newBookmark.image = image;
-      newBookmark.id = uuidv4();
-      newBookmark.userId = ctxUserId;
-      return newBookmark.save();
-    } catch (error) {
-      throw new UnprocessableEntityException();
-    }
-  }
+  //     newBookmark.title = title;
+  //     newBookmark.domain = domain;
+  //     newBookmark.image = image;
+  //     newBookmark.id = uuidv4();
+  //     newBookmark.userId = ctxUserId;
+  //     return newBookmark.save();
+  //   } catch (error) {
+  //     throw new UnprocessableEntityException();
+  //   }
+  // }
 
-  /**
-   *
-   * @param createBookmarkDto
-   * @returns IBookmarkDoc
-   * Parse url using npm library. Perform manual parsing only if first approach fails
-   */
-  async createV2(createBookmarkDto: CreateBookmarkDto): Promise<IBookmarkDoc> {
-    const ctx = this.cls.get('ctx');
-    const ctxUserId = ctx.user.id;
+  // deprecated
+  // /**
+  //  *
+  //  * @param createBookmarkDto
+  //  * @returns IBookmarkDoc
+  //  * Parse url using npm library. Perform manual parsing only if first approach fails
+  //  */
+  // async createV2(createBookmarkDto: CreateBookmarkDto): Promise<IBookmarkDoc> {
+  //   const ctx = this.cls.get('ctx');
+  //   const ctxUserId = ctx.user._id;
 
-    // init doc
-    const newBookmark = new this.bookmarkModel(createBookmarkDto);
-    newBookmark.id = uuidv4();
-    newBookmark.userId = ctxUserId;
-    newBookmark.color = randomcolor({ luminosity: 'light' });
+  //   // init doc
+  //   const newBookmark = new this.bookmarkModel(createBookmarkDto);
+  //   newBookmark.id = uuidv4();
+  //   newBookmark.userId = ctxUserId;
+  //   newBookmark.color = randomcolor({ luminosity: 'light' });
 
-    try {
-      // first approach: using npm lib to parse url
-      const {
-        data: npmParsedUrl,
-        error: npmParseUrlErr,
-      }: { data: IBookmarkMeta; error: Error } = await Common.pWrap(
-        this.parseUrlWithHtmlMetaDataParser(newBookmark.link),
-      );
+  //   try {
+  //     // first approach: using npm lib to parse url
+  //     const {
+  //       data: npmParsedUrl,
+  //       error: npmParseUrlErr,
+  //     }: { data: IBookmarkMeta; error: Error } = await Common.pWrap(
+  //       this.parseUrlWithHtmlMetaDataParser(newBookmark.link),
+  //     );
 
-      if (npmParsedUrl) {
-        Object.assign(newBookmark, npmParsedUrl);
-        return newBookmark.save();
-      }
+  //     if (npmParsedUrl) {
+  //       Object.assign(newBookmark, npmParsedUrl);
+  //       return newBookmark.save();
+  //     }
 
-      // second approach: manual parse
-      if (npmParseUrlErr) {
-        const title = await this.getTitleFromLink(createBookmarkDto.link);
-        const image = await this.getImageFromLink(createBookmarkDto.link);
-        const domain = extractDomain(createBookmarkDto.link) || '';
+  //     // second approach: manual parse
+  //     if (npmParseUrlErr) {
+  //       const title = await this.getTitleFromLink(createBookmarkDto.link);
+  //       const image = await this.getImageFromLink(createBookmarkDto.link);
+  //       const domain = extractDomain(createBookmarkDto.link) || '';
 
-        const manualParseUrlMeta: IBookmarkMeta = {
-          title,
-          image,
-          domain,
-        };
-        Object.assign(newBookmark, manualParseUrlMeta);
-        return newBookmark.save();
-      }
-    } catch (error) {
-      throw new UnprocessableEntityException();
-    }
-  }
+  //       const manualParseUrlMeta: IBookmarkMeta = {
+  //         title,
+  //         image,
+  //         domain,
+  //       };
+  //       Object.assign(newBookmark, manualParseUrlMeta);
+  //       return newBookmark.save();
+  //     }
+  //   } catch (error) {
+  //     throw new UnprocessableEntityException();
+  //   }
+  // }
 
   /**
    *
@@ -132,20 +134,13 @@ export class BookmarkService {
    */
   async createV3(link: string): Promise<IBookmarkDoc> {
     const ctx = this.cls.get('ctx');
-    const ctxUserId = ctx.user.id;
-
-    // init doc
-    const newBookmark = new this.bookmarkModel({ link });
-    newBookmark.id = uuidv4();
-    newBookmark.userId = ctxUserId;
+    const ctxUserId = ctx.user._id;
 
     // parse using metadata-scraper
     const {
       data: metaData,
       error: getMetaDataErr,
-    }: { data: MetaData; error: Error } = await Common.pWrap(
-      getMetaData(newBookmark.link),
-    );
+    }: { data: MetaData; error: Error } = await Common.pWrap(getMetaData(link));
 
     if (getMetaDataErr) {
       this.logger.debug(
@@ -155,12 +150,16 @@ export class BookmarkService {
     }
 
     if (metaData) {
-      newBookmark.image = metaData.image;
-      newBookmark.title = metaData?.title || link;
-      newBookmark.description = metaData?.description || '';
-      newBookmark.type = metaData.type;
-      newBookmark.icon = metaData.icon;
-      newBookmark.domain = metaData.provider;
+      const newBookmark = await this.bookmarkModel.create({
+        userId: ctxUserId,
+        link,
+        image: metaData.image,
+        title: metaData?.title || link,
+        description: metaData?.description || '',
+        type: metaData.type,
+        icon: metaData.icon,
+        domain: metaData.provider,
+      });
 
       // log for local dev
       if (process.env.NODE_ENV !== 'production') {
@@ -170,7 +169,7 @@ export class BookmarkService {
           )}`,
         );
       }
-      return newBookmark.save();
+      return newBookmark;
     }
   }
 
@@ -231,7 +230,7 @@ export class BookmarkService {
     tag?: string,
   ): Promise<IListBookmarks> {
     const ctx = this.cls.get('ctx');
-    const ctxUserId = ctx.user.id;
+    const ctxUserId = ctx.user._id;
 
     // compute skip and limit
     const skipLimitParam = Common.calculateSkipAndLimit(page, limit);
@@ -247,7 +246,7 @@ export class BookmarkService {
       if (!tagDoc) {
         throw new NotFoundException(`Tag ${tag} not found`);
       }
-      criteria['tags'] = { $in: [tagDoc.id] };
+      criteria['tags'] = { $in: [tagDoc._id] };
     }
 
     if (parentFolderId) {
@@ -259,11 +258,21 @@ export class BookmarkService {
 
     const bookmarks = await this.bookmarkModel
       .find(criteria)
-      .select({ note: 0 })
+      .select([
+        '_id',
+        'title',
+        'image',
+        'link',
+        'domain',
+        'type',
+        'description',
+        'tags',
+        'state',
+      ])
       .skip(skipLimitParam.skip)
       .limit(skipLimitParam.limit)
       .sort({ createdAt: 'desc' })
-      .populate('tagIds', { id: 1, name: 1, _id: 0 })
+      .populate('tags', { _id: 1, name: 1 })
       .lean();
 
     const result = {
@@ -274,12 +283,12 @@ export class BookmarkService {
     return result;
   }
 
-  async findOne(id: string): Promise<IBookmarkDoc> {
+  async findDocById(id: string): Promise<IBookmarkDoc> {
     const ctx = this.cls.get('ctx');
-    const ctxUserId = ctx.user.id;
+    const ctxUserId = ctx.user._id;
 
     const bookmark = await this.bookmarkModel.findOne({
-      id: id,
+      _id: id,
       userId: ctxUserId,
       $or: [
         { state: BookmarkStateEnum.AVAILABLE },
@@ -301,18 +310,18 @@ export class BookmarkService {
    */
   async findOneFullData(id: string): Promise<IBookmarkDoc> {
     const ctx = this.cls.get('ctx');
-    const ctxUserId = ctx.user.id;
+    const ctxUserId = ctx.user._id;
 
     const bookmark = await this.bookmarkModel
       .findOne({
-        id: id,
+        _id: id,
         userId: ctxUserId,
         $or: [
           { state: BookmarkStateEnum.AVAILABLE },
           { state: BookmarkStateEnum.ARCHIVED },
         ],
       })
-      .populate('tagIds', { id: 1, name: 1, _id: 0 })
+      .populate('tags', { _id: 1, name: 1 })
       .lean();
 
     if (!bookmark) {
@@ -327,49 +336,20 @@ export class BookmarkService {
     updateBookmarkDto: UpdateBookmarkDto,
   ): Promise<string> {
     const ctx = this.cls.get('ctx');
-    const ctxUserId = ctx.user.id;
+    const ctxUserId = ctx.user._id;
 
-    const updated = await this.bookmarkModel.findOneAndUpdate(
-      { id: id, userId: ctxUserId },
+    await this.bookmarkModel.updateOne(
+      { _id: id, userId: ctxUserId },
       { title: updateBookmarkDto.title },
     );
 
-    if (updated) {
-      return updated.id;
-    }
+    return id;
 
     throw new NotFoundException();
   }
 
-  // TODO @sb: consider moving this y doc into another collection should this impact performance
-  async updateNote(id: string, updateNoteDto: UpdateBookmarkNoteDto) {
-    const bookmark = await this.bookmarkModel.findOne({
-      id: id,
-    });
-    if (
-      bookmark.state !== BookmarkStateEnum.AVAILABLE &&
-      bookmark.state !== BookmarkStateEnum.ARCHIVED
-    ) {
-      throw new BadRequestException(`Resource not found`);
-    }
-
-    bookmark.note = updateNoteDto.note;
-    bookmark.updatedAt = new Date();
-    return bookmark.save();
-  }
-  async fetchNote(id: string): Promise<any> {
-    const bookmark = await this.bookmarkModel.findOne({
-      id: id,
-    });
-    if (bookmark.state !== BookmarkStateEnum.AVAILABLE) {
-      throw new BadRequestException(`Resource not found`);
-    }
-
-    return bookmark.note;
-  }
-
-  async archive(id: string): Promise<IBookmarkDoc> {
-    const bookmark = await this.findOne(id);
+  async archive(id: string) {
+    const bookmark = await this.findDocById(id);
 
     if (bookmark) {
       if (bookmark.state === BookmarkStateEnum.ARCHIVED) {
@@ -377,16 +357,20 @@ export class BookmarkService {
           `Conflict with current state. Resource already in '${BookmarkStateEnum.ARCHIVED}' state`,
         );
       }
-      bookmark.state = BookmarkStateEnum.ARCHIVED;
-      bookmark.updatedAt = new Date();
-      return bookmark.save();
+
+      await this.bookmarkModel.updateOne(
+        { _id: id },
+        { $set: { state: BookmarkStateEnum.ARCHIVED } },
+      );
+
+      return id;
     } else {
       throw new NotFoundException();
     }
   }
 
-  async unarchive(id: string): Promise<IBookmarkDoc> {
-    const bookmark = await this.findOne(id);
+  async unarchive(id: string) {
+    const bookmark = await this.findDocById(id);
 
     if (bookmark) {
       if (bookmark.state === BookmarkStateEnum.AVAILABLE) {
@@ -394,16 +378,19 @@ export class BookmarkService {
           `Conflict with current state. Resource already in '${BookmarkStateEnum.AVAILABLE}' state`,
         );
       }
-      bookmark.state = BookmarkStateEnum.AVAILABLE;
-      bookmark.updatedAt = new Date();
-      return bookmark.save();
+      await this.bookmarkModel.updateOne(
+        { _id: id },
+        { $set: { state: BookmarkStateEnum.AVAILABLE } },
+      );
+
+      return id;
     } else {
       throw new NotFoundException();
     }
   }
 
-  async remove(id: string): Promise<IBookmarkDoc> {
-    const bookmark = await this.findOne(id);
+  async remove(id: string) {
+    const bookmark = await this.findDocById(id);
 
     if (bookmark) {
       if (bookmark.state === BookmarkStateEnum.DELETED) {
@@ -412,9 +399,12 @@ export class BookmarkService {
         );
       }
       // soft delete
-      bookmark.state = BookmarkStateEnum.DELETED;
-      bookmark.updatedAt = new Date();
-      return bookmark.save();
+      await this.bookmarkModel.updateOne(
+        { _id: id },
+        { $set: { state: BookmarkStateEnum.DELETED } },
+      );
+
+      return id;
     } else {
       throw new NotFoundException();
     }
@@ -463,12 +453,12 @@ export class BookmarkService {
     // merge two tags array
     const existingAndNewTags = [...existingTagsObjList, ...newTags];
     this.logger.debug(
-      `[addTags] Existing tag: ${existingTagsObjList.length}, combinedTags: ${existingAndNewTags.length}, input tags: ${tags.length}. BkmkId: ${id}.`,
+      `[addTags] Input tags: ${tags.length}. Existing tags: ${existingTagsObjList.length}, new tags: ${newTags.length}. BkmkId: ${id}.`,
     );
 
     if (existingAndNewTags.length !== tags.length) {
       this.logger.debug(
-        `[addTags] Error in creating tags. Existing tag: ${existingTagsObjList.length}, existingAndNewTags: ${existingAndNewTags.length}, input tags: ${tags.length}. BkmkId: ${id}.`,
+        `[addTags]  Summation of existing and new does not match input. Error in creating tags. Input tags: ${tags.length}. Existing tags: ${existingTagsObjList.length}, new tags: ${newTags.length}. BkmkId: ${id}.`,
       );
       throw new InternalServerErrorException('Error in creating tags');
     }
@@ -481,24 +471,24 @@ export class BookmarkService {
     // embed tags ids into bookmark
     await this.bookmarkModel.updateOne(
       { _id: bookmark._id },
-      { $set: { tags: orderedTags.map((tag) => tag.id) } }, // update tags field
+      { $set: { tags: orderedTags.map((tag) => tag._id) } }, // update tags field
       { timestamps: false }, // do not update timestamp so as to not re-order client side render
     );
 
     // find tag removed from bookmark
-    const currTags = bookmark.tagIds;
+    const currTags = bookmark.tags;
     const untaggedTags = currTags.filter(
       (currTag) => !tags.includes(currTag.name),
     );
 
     if (currTags.length >= 0) {
       // get their ids
-      const untaggedTagIds = untaggedTags.map((tag) => tag.id);
+      const untaggedTagIds = untaggedTags.map((tag) => tag._id);
       // check if each tag is referenced, delete if not
       for (const tagId of untaggedTagIds) {
-        const isReferenced = await this.isTagReferenced(tagId);
+        const isReferenced = await this.isTagReferenced(tagId.toString());
         if (!isReferenced) {
-          await this.tagService.delete(tagId);
+          await this.tagService.delete(tagId.toString());
         }
       }
     }
@@ -591,10 +581,10 @@ export class BookmarkService {
 
   async isTagReferenced(tagId: string): Promise<boolean> {
     const ctx = this.cls.get('ctx');
-    const ctxUserId = ctx.user.id;
+    const ctxUserId = ctx.user._id;
 
     const res = await this.bookmarkModel.findOne({
-      id: tagId,
+      _id: tagId,
       userId: ctxUserId,
       $or: [
         { state: BookmarkStateEnum.AVAILABLE },
@@ -609,7 +599,7 @@ export class BookmarkService {
 
   async searchTerm(term: string): Promise<ISearchArticle[]> {
     const ctx = this.cls.get('ctx');
-    const ctxUserId = ctx.user.id;
+    const ctxUserId = ctx.user._id;
 
     let result = await this.bookmarkModel.aggregate([
       {
@@ -631,6 +621,16 @@ export class BookmarkService {
                 autocomplete: {
                   query: `${term.trim()}`,
                   path: 'description',
+                  fuzzy: {
+                    maxEdits: 2,
+                    prefixLength: 2,
+                  },
+                },
+              },
+              {
+                autocomplete: {
+                  query: `${term.trim()}`,
+                  path: 'link',
                   fuzzy: {
                     maxEdits: 2,
                     prefixLength: 2,

@@ -1,4 +1,5 @@
-import { Document } from 'mongoose';
+import mongoose, { Document } from 'mongoose';
+import { IUser } from 'src/user/interfaces/user.interface';
 
 /**
  * As the developer are responsible for ensuring that your document interface lines up with your Mongoose schema.
@@ -7,11 +8,11 @@ import { Document } from 'mongoose';
  */
 
 export interface ITagDoc extends Document {
-  readonly id: string;
+  readonly _id: mongoose.ObjectId;
   name: string;
-  userId: string;
-  readonly createdAt: Date; // init once
-  updatedAt: Date;
+  userId: IUser['_id'];
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
 }
 
 export interface IUpdateTag {

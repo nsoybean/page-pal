@@ -24,7 +24,7 @@ export class ListTagResponseDto {
 }
 
 export class GetTagResponseDto {
-  @Exclude()
+  @Expose()
   _id: string;
 
   @Exclude()
@@ -33,13 +33,14 @@ export class GetTagResponseDto {
   @Exclude()
   userId: string;
 
-  @Expose()
+  // to be deprecated
+  @Exclude()
   id: string;
 
   @Expose()
   name: string;
 
-  @Exclude()
+  @Expose()
   createdAt: Date;
 
   @Expose()

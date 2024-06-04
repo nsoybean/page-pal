@@ -24,7 +24,7 @@ export class ListBookmarkResponseDto {
 }
 
 export class GetBookmarkResponseDto {
-  @Exclude()
+  @Expose()
   _id: string;
 
   @Exclude()
@@ -33,7 +33,8 @@ export class GetBookmarkResponseDto {
   @Exclude()
   userId: string;
 
-  @Expose()
+  // To be deprecated
+  @Exclude()
   id: string;
 
   @Expose()
@@ -48,7 +49,7 @@ export class GetBookmarkResponseDto {
   @Expose()
   description: string;
 
-  @Expose()
+  @Exclude()
   color: string;
 
   @Expose()

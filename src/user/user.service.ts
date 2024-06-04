@@ -20,13 +20,12 @@ export class UserService {
   }
 
   async findUserById(id: string): Promise<IUser> {
-    return this.userModel.findOne({ id: id }).lean();
+    return this.userModel.findOne({ _id: id }).lean();
   }
 
   async registerNewUser(userDetails: IUserDetails): Promise<IUser> {
-    const newUser = new this.userModel(userDetails);
-    newUser.id = uuidv4();
-    return newUser.save();
+    const newUser = await this.userModel.create(userDetails);
+    return newUser;
   }
 
   async updateLastSignIn(email: string): Promise<IUser> {
@@ -38,7 +37,7 @@ export class UserService {
   }
   async findMe(): Promise<IUser> {
     const ctx = this.cls.get('ctx');
-    const ctxUserId = ctx.user.id;
+    const ctxUserId = ctx.user._id;
     const user = await this.findUserById(ctxUserId);
 
     return user;

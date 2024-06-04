@@ -22,7 +22,7 @@ export class TagService {
 
   async findAll(page: string, limit: string): Promise<IListTags> {
     const ctx = this.cls.get('ctx');
-    const ctxUserId = ctx.user.id;
+    const ctxUserId = ctx.user._id;
 
     // compute skip and limit
     const skipLimitParam = Common.calculateSkipAndLimit(page, limit);
@@ -55,7 +55,7 @@ export class TagService {
    */
   async findIdsOfExistingTags(tags: string[]): Promise<ITagDoc[]> {
     const ctx = this.cls.get('ctx');
-    const ctxUserId = ctx.user.id;
+    const ctxUserId = ctx.user._id;
     // find all tags that exist in the database
     const res = await this.tagModel.find({
       userId: ctxUserId,
@@ -71,7 +71,7 @@ export class TagService {
 
   async create(tags: string[]): Promise<ITagDoc[]> {
     const ctx = this.cls.get('ctx');
-    const ctxUserId = ctx.user.id;
+    const ctxUserId = ctx.user._id;
 
     // map array of tags into tag objects
     const tagObjects = tags.map((tag) => {
@@ -89,7 +89,7 @@ export class TagService {
 
   async findTagIdByName(name: string): Promise<ITagDoc> {
     const ctx = this.cls.get('ctx');
-    const ctxUserId = ctx.user.id;
+    const ctxUserId = ctx.user._id;
 
     const tag = await this.tagModel.findOne({
       userId: ctxUserId,
@@ -101,7 +101,7 @@ export class TagService {
 
   async delete(id: string): Promise<boolean> {
     const ctx = this.cls.get('ctx');
-    const ctxUserId = ctx.user.id;
+    const ctxUserId = ctx.user._id;
 
     const tag = await this.tagModel.deleteOne({
       userId: ctxUserId,
@@ -113,7 +113,7 @@ export class TagService {
 
   async countUserTags(): Promise<number> {
     const ctx = this.cls.get('ctx');
-    const ctxUserId = ctx.user.id;
+    const ctxUserId = ctx.user._id;
 
     const count = await this.tagModel.countDocuments({
       userId: ctxUserId,
@@ -124,7 +124,7 @@ export class TagService {
 
   async autocomplete(text: string): Promise<string[]> {
     const ctx = this.cls.get('ctx');
-    const ctxUserId = ctx.user.id;
+    const ctxUserId = ctx.user._id;
 
     let result = await this.tagModel.aggregate([
       {
