@@ -7,9 +7,15 @@ import { IBookmarkDoc } from 'src/bookmark/interfaces/bookmark.interface';
  * Link: https://mongoosejs.com/docs/typescript.html
  */
 
+export enum FolderStateEnum {
+  AVAILABLE = 'AVAILABLE',
+  DELETED = 'DELETED',
+}
+
 export interface IFolderDoc extends Document {
   readonly id: string;
   userId: string;
   name: string;
   parentFolderId: string;
+  state: FolderStateEnum;
 }

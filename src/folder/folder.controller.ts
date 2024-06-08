@@ -1,36 +1,58 @@
-import { Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  ClassSerializerInterceptor,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { FolderService } from './folder.service';
 import { AuthGuard } from '@nestjs/passport';
+import { CreateFolderDto } from './dto/create-folder.dto';
+import { UpdateFolderDto } from './dto/update-folder-dto';
 
-@Controller('saves')
+@Controller('folder')
 @UseGuards(AuthGuard('jwt'))
 export class FolderController {
   constructor(private readonly folderService: FolderService) {}
 
-  @Post('/folder/:id')
-  async getDataInsideFolder(
-    @Param('id') folderId?: string,
-    @Query('page') page?: string, // optional
-    @Query('limit') limit?: string, // optional
-  ) {
-    const listData = await this.folderService.getDataInsideFolder({
-      folderId,
-      page,
-      limit,
+  @UseInterceptors(ClassSerializerInterceptor)
+  @Post('')
+  async createV3(@Body() createFolderDto: CreateFolderDto) {
+    // map to null if 'root' is passed
+    if (createFolderDto.parentFolderId === 'root') {
+      createFolderDto.parentFolderId = null;
+    }
+
+    const newFolder = await this.folderService.create({
+      parentFolderId: createFolderDto.parentFolderId,
+      name: createFolderDto.folderName,
     });
-    return listData;
+    return { id: newFolder._id.toString() };
   }
 
-  @Get()
-  async getDataHome(
-    @Query('page') page?: string, // optional
-    @Query('limit') limit?: string, // optional
+  @Patch(':id/metadata')
+  async update(
+    @Param('id') id: string,
+    @Body() updateFolderDto: UpdateFolderDto,
   ) {
-    const listData = await this.folderService.getDataInsideFolder({
-      folderId: null,
-      page,
-      limit,
+    const updatedFolder = await this.folderService.update({
+      id,
+      name: updateFolderDto.name.trim(),
     });
-    return listData;
+    return { id: updatedFolder._id.toString() };
+  }
+
+  @Delete(':id')
+  async delete(@Param('id') id: string) {
+    const deletedFolder = await this.folderService.delete({
+      id,
+    });
+    return { id: deletedFolder._id.toString() };
   }
 }

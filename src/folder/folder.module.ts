@@ -1,11 +1,10 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ClsModule } from 'nestjs-cls';
-
 import { FolderController } from './folder.controller';
 import { Folder, FolderSchema } from './schemas/folder.schema';
 import { FolderService } from './folder.service';
-import { BookmarkModule } from 'src/bookmark/bookmark.module';
+import { UserModule } from 'src/user/user.module';
 
 @Module({
   imports: [
@@ -21,7 +20,7 @@ import { BookmarkModule } from 'src/bookmark/bookmark.module';
         },
       },
     }),
-    BookmarkModule,
+    UserModule,
     MongooseModule.forFeature([{ name: Folder.name, schema: FolderSchema }]),
   ],
   controllers: [FolderController],

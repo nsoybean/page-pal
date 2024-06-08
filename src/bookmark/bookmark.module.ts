@@ -6,6 +6,7 @@ import { BookmarkController } from './bookmark.controller';
 import { Bookmark, BookmarkSchema } from './schemas/bookmark.schema';
 import { BookmarkService } from './bookmark.service';
 import { TagModule } from 'src/tag/tag.module';
+import { FolderModule } from 'src/folder/folder.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { TagModule } from 'src/tag/tag.module';
       },
     }),
     TagModule,
+    FolderModule,
     MongooseModule.forFeature([
       { name: Bookmark.name, schema: BookmarkSchema },
     ]),

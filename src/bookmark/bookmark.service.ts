@@ -22,11 +22,7 @@ import getMetaData, { MetaData } from 'metadata-scraper';
 // import { CreateBookmarkDto } from './dto/create-bookmark.dto';
 // import { UpdateBookmarkDto } from './dto/update-bookmark.dto';
 
-import {
-  CreateBookmarkDto,
-  UpdateBookmarkDto,
-  UpdateBookmarkNoteDto,
-} from './dto/index';
+import { UpdateBookmarkDto } from './dto/index';
 import {
   IBookmarkDoc,
   IListBookmarks,
@@ -39,7 +35,9 @@ import { Common } from 'src/library';
 import extractDomain from 'extract-domain';
 import { Metadata, parser } from 'html-metadata-parser';
 import { TagService } from 'src/tag/tag.service';
-import { ITagDoc, IUpdateTag } from 'src/tag/interfaces/tag.interface';
+import { ITagDoc } from 'src/tag/interfaces/tag.interface';
+import { FolderService } from 'src/folder/folder.service';
+import { IFolderDoc } from 'src/folder/interfaces/folder.interface';
 @Injectable()
 export class BookmarkService {
   private readonly logger = new Logger(BookmarkService.name);
@@ -50,6 +48,8 @@ export class BookmarkService {
 
     @Inject(TagService)
     private readonly tagService: TagService,
+    @Inject(FolderService)
+    private readonly folderService: FolderService,
   ) {}
 
   // deprecated
@@ -132,7 +132,13 @@ export class BookmarkService {
    * @returns IBookmarkDoc
    * Parse url using npm library. Perform manual parsing only if first approach fails
    */
-  async createV3(link: string): Promise<IBookmarkDoc> {
+  async createV3({
+    link,
+    parentFolderId,
+  }: {
+    link: string;
+    parentFolderId: string;
+  }): Promise<IBookmarkDoc> {
     const ctx = this.cls.get('ctx');
     const ctxUserId = ctx.user._id;
 
@@ -159,6 +165,7 @@ export class BookmarkService {
         type: metaData.type,
         icon: metaData.icon,
         domain: metaData.provider,
+        parentFolderId,
       });
 
       // log for local dev
@@ -222,13 +229,69 @@ export class BookmarkService {
     return bookmarkMetaData;
   }
 
-  async findAllWithState(
-    page: string,
-    limit: string,
-    state: BookmarkStateEnum,
-    parentFolderId?: string,
-    tag?: string,
-  ): Promise<IListBookmarks> {
+  async findAllSavesWithinFolder({
+    page,
+    limit,
+    state,
+    parentFolderId = null,
+  }: {
+    page: string;
+    limit: string;
+    state: BookmarkStateEnum;
+    parentFolderId?: string;
+  }): Promise<IListBookmarks> {
+    const ctx = this.cls.get('ctx');
+    const ctxUserId = ctx.user._id;
+
+    // compute skip and limit
+    const skipLimitParam = Common.calculateSkipAndLimit(page, limit);
+
+    const criteria = {
+      userId: ctxUserId,
+      state: state,
+      parentFolderId,
+    };
+
+    const docCount = await this.bookmarkModel.countDocuments(criteria);
+
+    const bookmarks = await this.bookmarkModel
+      .find(criteria)
+      .select([
+        '_id',
+        'title',
+        'image',
+        'link',
+        'domain',
+        'type',
+        'description',
+        'tags',
+        'state',
+      ])
+      .skip(skipLimitParam.skip)
+      .limit(skipLimitParam.limit)
+      .sort({ createdAt: 'desc' })
+      .populate('tags', { _id: 1, name: 1 })
+      .lean();
+
+    const result = {
+      total_records: docCount,
+      data: bookmarks,
+    };
+
+    return result;
+  }
+
+  async findAllSavesByOptionalTag({
+    page,
+    limit,
+    state,
+    tag = null,
+  }: {
+    page: string;
+    limit: string;
+    state: BookmarkStateEnum;
+    tag?: string;
+  }): Promise<IListBookmarks> {
     const ctx = this.cls.get('ctx');
     const ctxUserId = ctx.user._id;
 
@@ -248,11 +311,6 @@ export class BookmarkService {
       }
       criteria['tags'] = { $in: [tagDoc._id] };
     }
-
-    if (parentFolderId) {
-      criteria['parentFolderId'] = parentFolderId;
-    }
-    console.log('🚀 ~ BookmarkService ~ criteria:', criteria);
 
     const docCount = await this.bookmarkModel.countDocuments(criteria);
 
@@ -344,8 +402,6 @@ export class BookmarkService {
     );
 
     return id;
-
-    throw new NotFoundException();
   }
 
   async archive(id: string) {
@@ -668,5 +724,84 @@ export class BookmarkService {
     if (result) {
       return result;
     } else return [];
+  }
+
+  async findAllSavesAndFolders({
+    folderId = null,
+    page,
+    limit,
+    bookmarkState,
+  }: {
+    folderId: string | null;
+    page: string;
+    limit: string;
+    bookmarkState: BookmarkStateEnum;
+  }): Promise<{
+    folders: {
+      total_recrods: number;
+      data: IFolderDoc[];
+    };
+    bookmarks: {
+      total_records: number;
+      data: IBookmarkDoc[];
+    };
+  }> {
+    let result: {
+      folders: {
+        total_recrods: number;
+        data: IFolderDoc[];
+      };
+      bookmarks: {
+        total_records: number;
+        data: IBookmarkDoc[];
+      };
+    } = null;
+
+    this.logger.debug(
+      `[findAllSavesAndFolders] args: ${JSON.stringify(
+        {
+          folderId,
+          page,
+          limit,
+          bookmarkState,
+        },
+        null,
+        2,
+      )}`,
+    );
+    let promisesAll = [];
+
+    // 1. get bookmarks
+    promisesAll.push(
+      this.findAllSavesWithinFolder({
+        page,
+        limit,
+        state: bookmarkState,
+        parentFolderId: folderId,
+      }),
+    );
+
+    // 2. get folders
+    promisesAll.push(
+      this.folderService.getFolderByIdWithSubFolders({ folderId }),
+    );
+
+    try {
+      const promiseAllRes = await Promise.all(promisesAll);
+
+      result = {
+        bookmarks: {
+          total_records: promiseAllRes[0].total_records,
+          data: promiseAllRes[0].data,
+        },
+        folders: {
+          total_recrods: promiseAllRes[1].length,
+          data: promiseAllRes[1],
+        },
+      };
+      return result;
+    } catch (error) {
+      throw new UnprocessableEntityException('Error in fetching data');
+    }
   }
 }

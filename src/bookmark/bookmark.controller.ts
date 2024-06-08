@@ -13,6 +13,7 @@ import {
   Query,
   Req,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 
@@ -31,6 +32,7 @@ import {
 @Controller('bookmark')
 @UseGuards(AuthGuard('jwt'))
 export class BookmarkController {
+  private readonly logger = new Logger(BookmarkController.name);
   constructor(private readonly bookmarkService: BookmarkService) {}
 
   // deprecated
@@ -52,46 +54,55 @@ export class BookmarkController {
   @UseInterceptors(ClassSerializerInterceptor)
   @Post('/v3')
   async createV3(@Body() createBookmarkDto: CreateBookmarkDto) {
-    const newBookmark = await this.bookmarkService.createV3(
-      createBookmarkDto.link.trim(),
-    );
-    return newBookmark._id;
+    // map to null if 'root' is passed
+    if (createBookmarkDto.parentFolderId === 'root') {
+      createBookmarkDto.parentFolderId = null;
+    }
+
+    const newBookmark = await this.bookmarkService.createV3({
+      link: createBookmarkDto.link.trim(),
+      parentFolderId: createBookmarkDto.parentFolderId,
+    });
+    return { id: newBookmark._id.toString() };
   }
 
   @Get()
-  async findAll(
+  async findAllSavesAndFolders(
+    @Query('folderId') folderId?: string, // optional
     @Query('page') page?: string, // optional
     @Query('limit') limit?: string, // optional
     @Query('tag') tag?: string, // optional
   ) {
-    // TODO @sb: add validation to query param
-    const listData = await this.bookmarkService.findAllWithState(
-      page,
-      limit,
-      BookmarkStateEnum.AVAILABLE,
-      tag,
+    this.logger.debug(
+      `[findAllSavesAndFolders] args: ${JSON.stringify(
+        { folderId, page, limit, tag },
+        null,
+        2,
+      )}`,
     );
-    return listData;
-  }
+    // if 'root' folder is passed, get saves and folders within root
+    if (folderId) {
+      this.logger.debug(`[findAllSavesAndFolders][root folder]`);
+      const listData = await this.bookmarkService.findAllSavesAndFolders({
+        folderId: folderId === 'root' ? null : folderId,
+        page,
+        limit,
+        bookmarkState: BookmarkStateEnum.AVAILABLE,
+      });
+      return listData;
+    } else if (!folderId && tag) {
+      this.logger.debug(`[findAllSavesAndFolders][query tag]`);
+      // if folderId is not passed
+      const listData = await this.bookmarkService.findAllSavesByOptionalTag({
+        page,
+        limit,
+        state: BookmarkStateEnum.AVAILABLE,
+        tag,
+      });
 
-  @Get('/archive')
-  async findAllArchive(
-    @Query('page') page?: string, // optional
-    @Query('limit') limit?: string, // optional
-  ) {
-    const listData = await this.bookmarkService.findAllWithState(
-      page,
-      limit,
-      BookmarkStateEnum.ARCHIVED,
-    );
-    return listData;
+      return { bookmarks: listData };
+    }
   }
-
-  // @Get(':id')
-  // async findOne(@Param('id') id: string) {
-  //   const bookmark = await this.bookmarkService.findOne(id);
-  //   return GetBookmarkByIdResponseDto.convertToDto(bookmark);
-  // }
 
   @Get('search')
   async search(@Query('query') query: string): Promise<ISearchArticle[] | []> {
@@ -105,13 +116,13 @@ export class BookmarkController {
   @Patch(':id/archive')
   async archive(@Param('id') id: string) {
     const bookmarkId = await this.bookmarkService.archive(id);
-    return bookmarkId;
+    return { id: bookmarkId };
   }
 
   @Patch(':id/unarchive')
   async unarchive(@Param('id') id: string) {
     const bookmarkId = await this.bookmarkService.unarchive(id);
-    return bookmarkId;
+    return { id: bookmarkId };
   }
 
   @Patch(':id/metadata')
@@ -126,7 +137,7 @@ export class BookmarkController {
   @Delete(':id')
   async remove(@Param('id') id: string) {
     const bookmarkId = await this.bookmarkService.remove(id);
-    return bookmarkId;
+    return { id: bookmarkId };
   }
 
   @Patch(':id/tags')

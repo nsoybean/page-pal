@@ -1,11 +1,18 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  Logger,
+  NotFoundException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import { Folder } from './schemas/folder.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { BookmarkService } from 'src/bookmark/bookmark.service';
 import { ClsService } from 'nestjs-cls';
 import { Model } from 'mongoose';
-import { IFolderDoc } from './interfaces/folder.interface';
+import { FolderStateEnum, IFolderDoc } from './interfaces/folder.interface';
 import { BookmarkStateEnum } from 'src/bookmark/interfaces/bookmark.interface';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 /**
@@ -17,61 +24,89 @@ export class FolderService {
   private readonly logger = new Logger(FolderService.name);
   constructor(
     private readonly cls: ClsService,
-    @InjectModel(Folder.name) private FolderModel: Model<IFolderDoc>,
+    @InjectModel(Folder.name) private folderModel: Model<IFolderDoc>,
 
-    @Inject(BookmarkService)
-    private readonly bookmarkService: BookmarkService,
+    @Inject(UserService)
+    private readonly userService: UserService,
   ) {}
 
-  async getDataInsideFolder({
-    folderId = null,
-    page,
-    limit,
+  async getFolderByIdWithSubFolders({
+    folderId,
   }: {
     folderId: string;
-    page: string;
-    limit: string;
-  }) {
-    console.log('🚀 ~ FolderService ~ folderId:', folderId);
-    let promisesAll = [];
-
-    // push articles query
-    // note: if folderId is null, will return all articles at base level
-    promisesAll.push(
-      this.bookmarkService.findAllWithState(
-        page,
-        limit,
-        BookmarkStateEnum.AVAILABLE,
-        folderId,
-      ),
-    );
-
-    // push folder query if any
-    promisesAll.push(
-      this.FolderModel.find({
+  }): Promise<IFolderDoc[]> {
+    const result = await this.folderModel
+      .find({
         $or: [
-          { id: folderId }, // curr folder
+          { _id: folderId }, // curr folder
           { parentFolderId: folderId }, // all nested folders
         ],
       })
-        .sort({ createdAt: 'desc' })
-        .lean(),
+      .select(['_id', 'name', 'parentFolderId', 'createdAt'])
+      .sort({ createdAt: 'desc' })
+      .lean();
+
+    return result;
+  }
+
+  async create({
+    parentFolderId,
+    name,
+  }: {
+    parentFolderId: string;
+    name: string;
+  }): Promise<IFolderDoc> {
+    const ctx = this.cls.get('ctx');
+    const ctxUserId = ctx.user._id;
+
+    const newFolder = await this.folderModel.create({
+      userId: ctxUserId,
+      parentFolderId,
+      name,
+    });
+
+    return newFolder;
+  }
+
+  async update({
+    id,
+    name,
+  }: {
+    id: string;
+    name: string;
+  }): Promise<IFolderDoc> {
+    const ctx = this.cls.get('ctx');
+    const ctxUserId = ctx.user._id;
+
+    const res = await this.folderModel.findOneAndUpdate(
+      { _id: id, userId: ctxUserId },
+      { name: name },
     );
 
-    try {
-      const results = await Promise.all(promisesAll);
-      console.log('🚀 ~ FolderService ~ results:', results);
+    if (res.isModified) {
+      return res;
+    } else {
+      throw new UnprocessableEntityException('Folder not updated!');
+    }
+  }
 
-      // return {
-      //   bookmarks: results[0],
-      //   folders: { data: results[1] },
-      // };
-      return {
-        bookmarks: [],
-        folders: { data: [] },
-      };
-    } catch (error) {
-      this.logger.error(error);
+  async delete({ id }: { id: string }): Promise<IFolderDoc> {
+    const ctx = this.cls.get('ctx');
+    const ctxUserId = ctx.user._id;
+
+    const res = await this.folderModel.findOneAndUpdate(
+      {
+        _id: id,
+        userId: ctxUserId,
+        state: FolderStateEnum.AVAILABLE,
+      },
+      { $set: { state: FolderStateEnum.DELETED } },
+    );
+
+    if (res && res.isModified) {
+      return res;
+    } else {
+      throw new NotFoundException('Folder not found!');
     }
   }
 }
