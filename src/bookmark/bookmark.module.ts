@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ClsModule } from 'nestjs-cls';
 
@@ -23,7 +23,7 @@ import { FolderModule } from 'src/folder/folder.module';
       },
     }),
     TagModule,
-    FolderModule,
+    forwardRef(() => FolderModule),
     MongooseModule.forFeature([
       { name: Bookmark.name, schema: BookmarkSchema },
     ]),

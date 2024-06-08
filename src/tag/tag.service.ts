@@ -56,6 +56,7 @@ export class TagService {
   async findIdsOfExistingTags(tags: string[]): Promise<ITagDoc[]> {
     const ctx = this.cls.get('ctx');
     const ctxUserId = ctx.user._id;
+
     // find all tags that exist in the database
     const res = await this.tagModel.find({
       userId: ctxUserId,

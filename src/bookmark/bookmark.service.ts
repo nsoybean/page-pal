@@ -8,14 +8,13 @@ import {
   Logger,
   Inject,
   InternalServerErrorException,
+  forwardRef,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import got from 'got';
 import { JSDOM } from 'jsdom';
 import { Model } from 'mongoose';
 import { ClsService } from 'nestjs-cls';
-import { v4 as uuidv4 } from 'uuid';
-import randomcolor from 'randomcolor';
 import getMetaData, { MetaData } from 'metadata-scraper';
 
 // import { Doc } from 'yjs';
@@ -48,8 +47,9 @@ export class BookmarkService {
 
     @Inject(TagService)
     private readonly tagService: TagService,
-    @Inject(FolderService)
-    private readonly folderService: FolderService,
+
+    @Inject(forwardRef(() => FolderService))
+    private folderService: FolderService,
   ) {}
 
   // deprecated
@@ -405,6 +405,9 @@ export class BookmarkService {
   }
 
   async archive(id: string) {
+    const ctx = this.cls.get('ctx');
+    const ctxUserId = ctx.user._id;
+
     const bookmark = await this.findDocById(id);
 
     if (bookmark) {
@@ -415,7 +418,7 @@ export class BookmarkService {
       }
 
       await this.bookmarkModel.updateOne(
-        { _id: id },
+        { _id: id, userId: ctxUserId },
         { $set: { state: BookmarkStateEnum.ARCHIVED } },
       );
 
@@ -426,6 +429,9 @@ export class BookmarkService {
   }
 
   async unarchive(id: string) {
+    const ctx = this.cls.get('ctx');
+    const ctxUserId = ctx.user._id;
+
     const bookmark = await this.findDocById(id);
 
     if (bookmark) {
@@ -435,7 +441,7 @@ export class BookmarkService {
         );
       }
       await this.bookmarkModel.updateOne(
-        { _id: id },
+        { _id: id, userId: ctxUserId },
         { $set: { state: BookmarkStateEnum.AVAILABLE } },
       );
 
@@ -446,6 +452,9 @@ export class BookmarkService {
   }
 
   async remove(id: string) {
+    const ctx = this.cls.get('ctx');
+    const ctxUserId = ctx.user._id;
+
     const bookmark = await this.findDocById(id);
 
     if (bookmark) {
@@ -456,7 +465,7 @@ export class BookmarkService {
       }
       // soft delete
       await this.bookmarkModel.updateOne(
-        { _id: id },
+        { _id: id, userId: ctxUserId },
         { $set: { state: BookmarkStateEnum.DELETED } },
       );
 
@@ -473,6 +482,9 @@ export class BookmarkService {
    * @returns boolean, whether tags were added successfully
    */
   async addTags(id: string, tags: string[]): Promise<boolean> {
+    const ctx = this.cls.get('ctx');
+    const ctxUserId = ctx.user._id;
+
     const bookmark = await this.findOneFullData(id);
 
     // forward to tagService, to find and return matched tags
@@ -526,7 +538,7 @@ export class BookmarkService {
 
     // embed tags ids into bookmark
     await this.bookmarkModel.updateOne(
-      { _id: bookmark._id },
+      { _id: bookmark._id, userId: ctxUserId },
       { $set: { tags: orderedTags.map((tag) => tag._id) } }, // update tags field
       { timestamps: false }, // do not update timestamp so as to not re-order client side render
     );
@@ -803,5 +815,22 @@ export class BookmarkService {
     } catch (error) {
       throw new UnprocessableEntityException('Error in fetching data');
     }
+  }
+
+  async deleteAllBookmarksByFolderId({
+    folderId,
+  }: {
+    folderId: string;
+  }): Promise<void> {
+    const ctx = this.cls.get('ctx');
+    const ctxUserId = ctx.user._id;
+
+    await this.bookmarkModel.updateMany(
+      {
+        userId: ctxUserId,
+        parentFolderId: folderId,
+      },
+      { $set: { state: BookmarkStateEnum.DELETED } },
+    );
   }
 }

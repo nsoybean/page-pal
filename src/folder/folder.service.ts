@@ -1,9 +1,11 @@
 import {
   Inject,
   Injectable,
+  InternalServerErrorException,
   Logger,
   NotFoundException,
   UnprocessableEntityException,
+  forwardRef,
 } from '@nestjs/common';
 import { Folder } from './schemas/folder.schema';
 import { InjectModel } from '@nestjs/mongoose';
@@ -28,15 +30,25 @@ export class FolderService {
 
     @Inject(UserService)
     private readonly userService: UserService,
+
+    @Inject(forwardRef(() => BookmarkService))
+    private bookmarkService: BookmarkService,
   ) {}
 
   async getFolderByIdWithSubFolders({
     folderId,
+    state = FolderStateEnum.AVAILABLE,
   }: {
     folderId: string;
+    state?: FolderStateEnum;
   }): Promise<IFolderDoc[]> {
+    const ctx = this.cls.get('ctx');
+    const ctxUserId = ctx.user._id;
+
     const result = await this.folderModel
       .find({
+        userId: ctxUserId,
+        state,
         $or: [
           { _id: folderId }, // curr folder
           { parentFolderId: folderId }, // all nested folders
@@ -94,19 +106,51 @@ export class FolderService {
     const ctx = this.cls.get('ctx');
     const ctxUserId = ctx.user._id;
 
-    const res = await this.folderModel.findOneAndUpdate(
+    try {
+      // deleting all content inside folder
+      await this.bookmarkService.deleteAllBookmarksByFolderId({
+        folderId: id,
+      });
+
+      await this.deleteAllFoldersByParentFolderId({ parentFolderId: id });
+
+      // deleting folder itself
+      const res = await this.folderModel.findOneAndUpdate(
+        {
+          _id: id,
+          userId: ctxUserId,
+          state: FolderStateEnum.AVAILABLE,
+        },
+        { $set: { state: FolderStateEnum.DELETED } },
+      );
+
+      if (res && res.isModified) {
+        return res;
+      } else {
+        throw new NotFoundException('Folder not found!');
+      }
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'Error deleting folder and its content!',
+      );
+    }
+  }
+
+  async deleteAllFoldersByParentFolderId({
+    parentFolderId,
+  }: {
+    parentFolderId: string;
+  }): Promise<void> {
+    const ctx = this.cls.get('ctx');
+    const ctxUserId = ctx.user._id;
+
+    await this.folderModel.updateMany(
       {
-        _id: id,
+        parentFolderId,
         userId: ctxUserId,
         state: FolderStateEnum.AVAILABLE,
       },
       { $set: { state: FolderStateEnum.DELETED } },
     );
-
-    if (res && res.isModified) {
-      return res;
-    } else {
-      throw new NotFoundException('Folder not found!');
-    }
   }
 }
