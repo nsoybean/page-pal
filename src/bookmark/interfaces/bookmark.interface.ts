@@ -26,6 +26,7 @@ export interface IBookmarkDoc extends Document {
   description?: string;
   icon?: string;
   tags?: ITagDoc[];
+  parentFolderId?: IBookmarkDoc['_id'];
   readonly createdAt: Date;
   readonly updatedAt: Date;
 }

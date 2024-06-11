@@ -22,11 +22,3 @@ export class Tag {
 // factory method to create schema
 // to be init in module
 export const TagSchema = SchemaFactory.createForClass(Tag);
-
-export interface ITag {
-  title: string;
-  image: string;
-  domain: string;
-  type?: string;
-  description?: string;
-}

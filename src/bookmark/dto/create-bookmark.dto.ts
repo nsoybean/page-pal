@@ -10,6 +10,9 @@ export class CreateBookmarkDto {
   @IsString()
   @IsNotEmpty()
   link: string;
+
+  @IsString()
+  parentFolderId: string;
 }
 
 export class CreateBookmarkResponseDto {

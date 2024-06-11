@@ -3,6 +3,7 @@ import { BookmarkStateEnum } from '../interfaces/bookmark.interface';
 import { Tag } from 'src/tag/schemas/tag.schema';
 import mongoose from 'mongoose';
 import { User } from 'src/user/schemas/user.schema';
+import { Folder } from 'src/folder/schemas/folder.schema';
 /**
  * The @Schema() decorator marks a class as a schema definition. It maps our 'Save' class to a MongoDB collection of the same name,
  * but with an additional “s” at the end - so the final mongo collection name will be 'saves'.
@@ -43,6 +44,14 @@ export class Bookmark {
 
   @Prop({ default: '' })
   icon: string;
+
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: Folder.name,
+    index: true,
+    sparse: true,
+  })
+  parentFolderId: string;
 }
 
 // factory method to create schema
