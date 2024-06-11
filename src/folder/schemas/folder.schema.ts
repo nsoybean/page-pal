@@ -21,7 +21,12 @@ export class Folder {
   @Prop({ required: true })
   name: string;
 
-  @Prop({ index: true, sparse: true, type: mongoose.Schema.Types.ObjectId }) // spares required as not all documents has parentFolderId field
+  @Prop({
+    index: true,
+    sparse: true,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: Folder.name,
+  }) // spares required as not all documents has parentFolderId field
   parentFolderId: [this];
 
   @Prop({ default: FolderStateEnum.AVAILABLE, index: true })

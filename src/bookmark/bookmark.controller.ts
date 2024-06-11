@@ -82,7 +82,7 @@ export class BookmarkController {
     );
     // if 'root' folder is passed, get saves and folders within root
     if (folderId) {
-      this.logger.debug(`[findAllSavesAndFolders][root folder]`);
+      this.logger.debug(`[findAllSavesAndFolders][folderId query]`);
       const listData = await this.bookmarkService.findAllSavesAndFolders({
         folderId: folderId === 'root' ? null : folderId,
         page,
@@ -91,7 +91,7 @@ export class BookmarkController {
       });
       return listData;
     } else if (!folderId && tag) {
-      this.logger.debug(`[findAllSavesAndFolders][query tag]`);
+      this.logger.debug(`[findAllSavesByOptionalTag][!folderId query]`);
       // if folderId is not passed
       const listData = await this.bookmarkService.findAllSavesByOptionalTag({
         page,

@@ -738,6 +738,12 @@ export class BookmarkService {
     } else return [];
   }
 
+  /**
+   * find all bookmarks and folders within folderId
+   * note: if folderId is null, it returns all bookmarks and folders at 'root' level
+   * @param param0
+   * @returns
+   */
   async findAllSavesAndFolders({
     folderId = null,
     page,
@@ -757,6 +763,7 @@ export class BookmarkService {
       total_records: number;
       data: IBookmarkDoc[];
     };
+    parentFolderHierarchy: IFolderDoc;
   }> {
     let result: {
       folders: {
@@ -767,6 +774,7 @@ export class BookmarkService {
         total_records: number;
         data: IBookmarkDoc[];
       };
+      parentFolderHierarchy: IFolderDoc;
     } = null;
 
     this.logger.debug(
@@ -793,14 +801,18 @@ export class BookmarkService {
       }),
     );
 
-    // 2. get folders
-    promisesAll.push(
-      this.folderService.getFolderByIdWithSubFolders({ folderId }),
-    );
+    // 2. get sub folders
+    promisesAll.push(this.folderService.getSubFolderInFolderId({ folderId }));
+
+    // 3. if folderId is non-root, get parent folder hierarchy (for breadcrumb purpose on UI)
+    if (folderId) {
+      promisesAll.push(
+        this.folderService.getParentFolderOfFolderId({ folderId }),
+      );
+    }
 
     try {
       const promiseAllRes = await Promise.all(promisesAll);
-
       result = {
         bookmarks: {
           total_records: promiseAllRes[0].total_records,
@@ -810,6 +822,7 @@ export class BookmarkService {
           total_recrods: promiseAllRes[1].length,
           data: promiseAllRes[1],
         },
+        parentFolderHierarchy: promiseAllRes[2],
       };
       return result;
     } catch (error) {

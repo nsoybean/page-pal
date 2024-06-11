@@ -35,7 +35,7 @@ export class FolderService {
     private bookmarkService: BookmarkService,
   ) {}
 
-  async getFolderByIdWithSubFolders({
+  async getSubFolderInFolderId({
     folderId,
     state = FolderStateEnum.AVAILABLE,
   }: {
@@ -57,6 +57,66 @@ export class FolderService {
       .select(['_id', 'name', 'parentFolderId', 'createdAt'])
       .sort({ createdAt: 'desc' })
       .lean();
+
+    return result;
+  }
+
+  async getParentFolderOfFolderId({
+    folderId,
+    state = FolderStateEnum.AVAILABLE,
+  }: {
+    folderId: string;
+    state?: FolderStateEnum;
+  }): Promise<{
+    maxDepthLookupReached: boolean;
+    list: { _id: string; name: string }[];
+  }> {
+    const ctx = this.cls.get('ctx');
+    const ctxUserId = ctx.user._id;
+
+    const MAX_DEPTH = 5; // max returns 5 levels of parent folder
+    let depth = 0;
+    let parentFolderHierarchyList: { _id: string; name: string }[] = [];
+    let currFolderId: any = folderId;
+    // + 1 since it include curr folder
+    while (parentFolderHierarchyList.length < MAX_DEPTH + 1) {
+      const result = await this.folderModel
+        .findOne({
+          _id: currFolderId,
+          userId: ctxUserId,
+          state,
+        })
+        .populate({
+          path: 'parentFolderId',
+          select: ['_id', 'name', 'parentFolderId'],
+        })
+        .lean();
+
+      parentFolderHierarchyList.push({
+        _id: result._id,
+        name: result.name,
+      });
+
+      depth++;
+
+      // if parent folder does exist
+      if (result && result.parentFolderId) {
+        currFolderId = result.parentFolderId;
+      } else {
+        // if parent folder does not exist
+        currFolderId = null;
+        break;
+      }
+    }
+
+    let result = {
+      // if still have curr folder, it means it has stopped traversing because of max depth
+      maxDepthLookupReached: currFolderId ? true : false,
+      list: parentFolderHierarchyList,
+    };
+    this.logger.debug(
+      `[getParentFolderOfFolderId] result: ${JSON.stringify(result, null, 2)}`,
+    );
 
     return result;
   }
