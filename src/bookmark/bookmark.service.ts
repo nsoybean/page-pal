@@ -756,7 +756,7 @@ export class BookmarkService {
     bookmarkState: BookmarkStateEnum;
   }): Promise<{
     folders: {
-      total_recrods: number;
+      total_records: number;
       data: IFolderDoc[];
     };
     bookmarks: {
@@ -767,7 +767,7 @@ export class BookmarkService {
   }> {
     let result: {
       folders: {
-        total_recrods: number;
+        total_records: number;
         data: IFolderDoc[];
       };
       bookmarks: {
@@ -819,7 +819,7 @@ export class BookmarkService {
           data: promiseAllRes[0].data,
         },
         folders: {
-          total_recrods: promiseAllRes[1].length,
+          total_records: promiseAllRes[1].length,
           data: promiseAllRes[1],
         },
         parentFolderHierarchy: promiseAllRes[2],
