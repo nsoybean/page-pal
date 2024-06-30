@@ -77,7 +77,7 @@ export class FolderService {
 
     const MAX_DEPTH = 5; // max returns 5 levels of parent folder
     let depth = 0;
-    let parentFolderHierarchyList: { _id: string; name: string }[] = [];
+    const parentFolderHierarchyList: { _id: string; name: string }[] = [];
     let currFolderId: any = folderId;
     // + 1 since it include curr folder
     while (parentFolderHierarchyList.length < MAX_DEPTH + 1) {
@@ -110,7 +110,7 @@ export class FolderService {
       }
     }
 
-    let result = {
+    const result = {
       // if still have curr folder, it means it has stopped traversing because of max depth
       maxDepthLookupReached: currFolderId ? true : false,
       list: parentFolderHierarchyList,
@@ -133,7 +133,11 @@ export class FolderService {
     const ctxUserId = ctx.user._id;
 
     // temp pre-req query till mongo unique index impl
-    const queriedFolder = await this.folderModel.find({});
+    const queriedFolder = await this.folderModel.findOne({
+      name,
+      parentFolderId,
+      status: FolderStateEnum.AVAILABLE,
+    });
     if (queriedFolder) {
       throw new ConflictException('Duplicated folder name');
     } else {
