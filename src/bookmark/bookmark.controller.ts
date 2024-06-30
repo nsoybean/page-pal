@@ -152,4 +152,16 @@ export class BookmarkController {
 
     return { id };
   }
+
+  @Patch('move')
+  async moveBookmarks(
+    @Body() body: { bookmarkIds: string[]; folderId: string },
+  ) {
+    await this.bookmarkService.moveBookmarksInfoFolder({
+      bookmarkIds: body.bookmarkIds,
+      folderId: body.folderId,
+    });
+
+    return { result: body.bookmarkIds };
+  }
 }

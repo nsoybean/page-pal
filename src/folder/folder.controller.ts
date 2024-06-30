@@ -69,11 +69,25 @@ export class FolderController {
       state: FolderStateEnum.AVAILABLE,
     });
 
-    return {
-      folders: {
-        total_records: childFolders.length,
-        data: childFolders,
-      },
-    };
+    if (!currFolderId) {
+      return {
+        folders: {
+          total_records: childFolders.length,
+          data: childFolders,
+        },
+      };
+    } else {
+      const parentFolders = await this.folderService.getParentFolderOfFolderId({
+        folderId: currFolderId,
+      });
+
+      return {
+        folders: {
+          total_records: childFolders.length,
+          data: childFolders,
+        },
+        parentFolderHierarchy: parentFolders || null,
+      };
+    }
   }
 }

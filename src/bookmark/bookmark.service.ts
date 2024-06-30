@@ -669,7 +669,7 @@ export class BookmarkService {
     const ctx = this.cls.get('ctx');
     const ctxUserId = ctx.user._id;
 
-    let result = await this.bookmarkModel.aggregate([
+    const result = await this.bookmarkModel.aggregate([
       {
         $search: {
           index: 'bookmark-search',
@@ -789,7 +789,7 @@ export class BookmarkService {
         2,
       )}`,
     );
-    let promisesAll = [];
+    const promisesAll = [];
 
     // 1. get bookmarks
     promisesAll.push(
@@ -845,5 +845,32 @@ export class BookmarkService {
       },
       { $set: { state: BookmarkStateEnum.DELETED } },
     );
+  }
+
+  async moveBookmarksInfoFolder({
+    bookmarkIds,
+    folderId,
+  }: {
+    bookmarkIds: string[];
+    folderId: string;
+  }) {
+    // find folder
+    const targetFolder = await this.folderService.get({ id: folderId });
+    if (!targetFolder) {
+      throw new NotFoundException('Folder not found');
+    }
+
+    // bulk opts update parentFolderId
+    const bulkUpdateOps = bookmarkIds.map((bkmarkId) => ({
+      updateOne: {
+        filter: { _id: bkmarkId }, // Assuming _id is used as the identifier in MongoDB
+        update: { $set: { parentFolderId: folderId } },
+      },
+    }));
+
+    // Execute bulk update
+    await this.bookmarkModel.bulkWrite(bulkUpdateOps);
+
+    return true;
   }
 }
