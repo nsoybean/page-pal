@@ -8,7 +8,7 @@ import { FolderStateEnum } from '../interfaces/folder.interface';
  * The @Schema() decorator marks a class as a schema definition. It maps our 'Save' class to a MongoDB collection of the same name,
  * but with an additional “s” at the end - so the final mongo collection name will be 'saves'.
  */
-@Schema({ timestamps: true })
+@Schema({ timestamps: true, autoIndex: true })
 export class Folder {
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
@@ -36,3 +36,5 @@ export class Folder {
 // factory method to create schema
 // to be init in module
 export const FolderSchema = SchemaFactory.createForClass(Folder);
+
+FolderSchema.index({ name: 1, parentFolderId: 1 }, { unique: true });

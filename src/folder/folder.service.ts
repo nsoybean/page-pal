@@ -1,4 +1,5 @@
 import {
+  ConflictException,
   Inject,
   Injectable,
   InternalServerErrorException,
@@ -131,13 +132,19 @@ export class FolderService {
     const ctx = this.cls.get('ctx');
     const ctxUserId = ctx.user._id;
 
-    const newFolder = await this.folderModel.create({
-      userId: ctxUserId,
-      parentFolderId,
-      name,
-    });
+    // temp pre-req query till mongo unique index impl
+    const queriedFolder = await this.folderModel.find({});
+    if (queriedFolder) {
+      throw new ConflictException('Duplicated folder name');
+    } else {
+      const newFolder = await this.folderModel.create({
+        userId: ctxUserId,
+        parentFolderId,
+        name,
+      });
 
-    return newFolder;
+      return newFolder;
+    }
   }
 
   async update({
@@ -194,6 +201,17 @@ export class FolderService {
         'Error deleting folder and its content!',
       );
     }
+  }
+
+  async get({ id }: { id: string }) {
+    const ctx = this.cls.get('ctx');
+    const ctxUserId = ctx.user._id;
+
+    return await this.folderModel.findById({
+      _id: id,
+      userId: ctxUserId,
+      state: FolderStateEnum.AVAILABLE,
+    });
   }
 
   async deleteAllFoldersByParentFolderId({

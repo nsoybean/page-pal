@@ -15,6 +15,7 @@ import { FolderService } from './folder.service';
 import { AuthGuard } from '@nestjs/passport';
 import { CreateFolderDto } from './dto/create-folder.dto';
 import { UpdateFolderDto } from './dto/update-folder-dto';
+import { FolderStateEnum } from './interfaces/folder.interface';
 
 @Controller('folder')
 @UseGuards(AuthGuard('jwt'))
@@ -54,5 +55,39 @@ export class FolderController {
       id,
     });
     return { id: deletedFolder._id.toString() };
+  }
+
+  @Get('/folders')
+  async get(@Query('id') id: string) {
+    let currFolderId = id;
+    if (id === 'root') {
+      currFolderId = null;
+    }
+
+    const childFolders = await this.folderService.getSubFolderInFolderId({
+      folderId: currFolderId,
+      state: FolderStateEnum.AVAILABLE,
+    });
+
+    if (!currFolderId) {
+      return {
+        folders: {
+          total_records: childFolders.length,
+          data: childFolders,
+        },
+      };
+    } else {
+      const parentFolders = await this.folderService.getParentFolderOfFolderId({
+        folderId: currFolderId,
+      });
+
+      return {
+        folders: {
+          total_records: childFolders.length,
+          data: childFolders,
+        },
+        parentFolderHierarchy: parentFolders || null,
+      };
+    }
   }
 }
