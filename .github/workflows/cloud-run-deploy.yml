@@ -8,8 +8,8 @@ on:
 env:
   JWT_SECRET_EXPIRY_SECONDS: ${{ secrets.JWT_SECRET_EXPIRY_SECONDS }}
   GOOGLE_CALLBACK_URL: ${{ secrets.GOOGLE_CALLBACK_URL }}
-  CLIENT_HOST: https://yetti.vercel.app
-  CLIENT_URL: https://yetti.vercel.app/saves
+  CLIENT_HOST: ${{ secrets.CLIENT_HOST }}
+  CLIENT_URL: ${{ secrets.CLIENT_URL }}
   JWT_SECRET: ${{ secrets.JWT_SECRET }}
   NODE_ENV: production
   GOOGLE_SECRET: ${{ secrets.GOOGLE_SECRET }}
